@@ -30,23 +30,19 @@ if (books.length === 0) {
 
 function switchAuthTab(tab) {
     // Hide all tabs
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    
-    if (loginTab) loginTab.classList.remove('active');
-    if (registerTab) registerTab.classList.remove('active');
+    document.getElementById('loginTab').classList.remove('active');
+    document.getElementById('registerTab').classList.remove('active');
 
     // Remove active class from all buttons
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.auth-tab-btn').forEach(btn => btn.classList.remove('active'));
 
     // Show selected tab
     if (tab === 'login') {
-        if (loginTab) loginTab.classList.add('active');
-        tabBtns[0].classList.add('active');
+        document.getElementById('loginTab').classList.add('active');
+        document.querySelectorAll('.auth-tab-btn')[0].classList.add('active');
     } else {
-        if (registerTab) registerTab.classList.add('active');
-        tabBtns[1].classList.add('active');
+        document.getElementById('registerTab').classList.add('active');
+        document.querySelectorAll('.auth-tab-btn')[1].classList.add('active');
     }
 }
 
@@ -55,11 +51,8 @@ function switchAuthTab(tab) {
 // =====================
 
 function showPage(pageId) {
-    console.log('Showing page:', pageId);
-    
     // If not logged in and trying to access protected pages, redirect to auth
     if (!currentUser && ['home', 'books', 'profile', 'addBook'].includes(pageId)) {
-        console.log('Not logged in, redirecting to auth');
         showPage('auth');
         return;
     }
@@ -72,7 +65,6 @@ function showPage(pageId) {
     const selectedPage = document.getElementById(pageId);
     if (selectedPage) {
         selectedPage.classList.add('active');
-        console.log('Page shown:', pageId);
 
         // Update navigation based on login status
         updateNavigation();
@@ -83,35 +75,27 @@ function showPage(pageId) {
         } else if (pageId === 'profile') {
             loadProfileData();
         }
-    } else {
-        console.error('Page not found:', pageId);
     }
 }
 
 function updateNavigation() {
     const navbar = document.getElementById('navbar');
     
-    if (currentUser && navbar) {
+    if (currentUser) {
         navbar.style.display = 'block';
-    } else if (navbar) {
+    } else {
         navbar.style.display = 'none';
     }
-}
-
+        }
 // =====================
 // INITIALIZATION
 // =====================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded');
-    console.log('Current user:', currentUser);
-    
     // Initialize page based on login status
     if (currentUser) {
-        console.log('User is logged in, showing home');
         showPage('home');
     } else {
-        console.log('User not logged in, showing auth');
         showPage('auth');
     }
     updateNavigation();
@@ -121,17 +105,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // =====================
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
-        console.log('Register form found');
         registerForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Register form submitted');
             
             const username = document.getElementById('regUsername').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
-
-            console.log('Registration data:', { username, email });
 
             // Validation
             if (username.length < 3) {
@@ -170,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             users.push(newUser);
             localStorage.setItem('users', JSON.stringify(users));
-            console.log('User registered:', newUser);
 
             alert('Registration successful! Please login.');
             registerForm.reset();
@@ -183,15 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // =====================
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        console.log('Login form found');
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Login form submitted');
             
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
-
-            console.log('Login attempt:', username);
 
             // Find user
             const user = users.find(u => u.username === username && u.password === password);
@@ -199,7 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (user) {
                 currentUser = user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                console.log('Login successful');
                 alert(`Welcome back, ${user.username}!`);
                 loginForm.reset();
                 updateNavigation();
@@ -215,10 +189,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // =====================
     const addBookForm = document.getElementById('addBookForm');
     if (addBookForm) {
-        console.log('Add book form found');
         addBookForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            console.log('Add book form submitted');
 
             if (!currentUser) {
                 alert('Please login to add a book');
@@ -251,7 +223,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             books.push(newBook);
             localStorage.setItem('books', JSON.stringify(books));
-            console.log('Book added:', newBook);
 
             alert('Book added successfully!');
             addBookForm.reset();
@@ -259,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
 // =====================
 // LOGOUT
 // =====================
