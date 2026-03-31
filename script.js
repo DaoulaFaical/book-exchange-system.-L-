@@ -29,6 +29,8 @@ if (books.length === 0) {
 // =====================
 
 function showPage(pageId) {
+    console.log('Showing page:', pageId);
+    
     // If not logged in and trying to access protected pages, redirect to login
     if (!currentUser && ['books', 'profile', 'addBook'].includes(pageId)) {
         alert('Please login or register first');
@@ -54,6 +56,8 @@ function showPage(pageId) {
         } else if (pageId === 'profile') {
             loadProfileData();
         }
+    } else {
+        console.error('Page not found:', pageId);
     }
 }
 
@@ -68,20 +72,36 @@ function updateNavigation() {
 }
 
 // =====================
-// AUTHENTICATION
+// INITIALIZATION
 // =====================
 
-// Register Form
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded');
+    
+    // Initialize page
+    if (currentUser) {
+        showPage('books');
+    } else {
+        showPage('home');
+    }
+    updateNavigation();
+
+    // =====================
+    // REGISTER FORM
+    // =====================
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
+        console.log('Register form found');
         registerForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Register form submitted');
             
             const username = document.getElementById('regUsername').value.trim();
             const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            console.log('Username:', username);
 
             // Validation
             if (username.length < 3) {
@@ -120,21 +140,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
             users.push(newUser);
             localStorage.setItem('users', JSON.stringify(users));
+            console.log('User registered:', newUser);
 
             alert('Registration successful! Please login.');
             registerForm.reset();
             showPage('login');
         });
+    } else {
+        console.log('Register form NOT found');
     }
 
-    // Login Form
+    // =====================
+    // LOGIN FORM
+    // =====================
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
+        console.log('Login form found');
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Login form submitted');
             
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
+
+            console.log('Login attempt:', username);
 
             // Find user
             const user = users.find(u => u.username === username && u.password === password);
@@ -142,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (user) {
                 currentUser = user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                console.log('Login successful');
                 alert(`Welcome back, ${user.username}!`);
                 loginForm.reset();
                 showPage('books');
@@ -150,13 +180,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Invalid username or password');
             }
         });
+    } else {
+        console.log('Login form NOT found');
     }
 
-    // Add Book Form
+    // =====================
+    // ADD BOOK FORM
+    // =====================
     const addBookForm = document.getElementById('addBookForm');
     if (addBookForm) {
+        console.log('Add book form found');
         addBookForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Add book form submitted');
 
             if (!currentUser) {
                 alert('Please login to add a book');
@@ -189,21 +225,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             books.push(newBook);
             localStorage.setItem('books', JSON.stringify(books));
+            console.log('Book added:', newBook);
 
             alert('Book added successfully!');
             addBookForm.reset();
             showPage('books');
         });
-    }
-
-    // Initialize page
-    if (currentUser) {
-        showPage('books');
     } else {
-        showPage('home');
+        console.log('Add book form NOT found');
     }
-    updateNavigation();
 });
+
+// =====================
+// LOGOUT
+// =====================
 
 function logout() {
     currentUser = null;
@@ -217,7 +252,6 @@ function logout() {
 // BOOKS MANAGEMENT
 // =====================
 
-// Display all books
 function displayBooks() {
     const booksList = document.getElementById('booksList');
     if (!booksList) return;
@@ -245,7 +279,6 @@ function displayBooks() {
     });
 }
 
-// Filter books by search and category
 function filterBooks() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const categoryFilter = document.getElementById('categoryFilter').value;
@@ -269,7 +302,6 @@ function filterBooks() {
     });
 }
 
-// Delete Book
 function deleteBook(bookId) {
     if (confirm('Are you sure you want to delete this book?')) {
         books = books.filter(b => b.id !== bookId);
@@ -320,4 +352,4 @@ function displayUserBooks(userBooks) {
         `;
         myBooksList.appendChild(bookCard);
     });
-                                     
+         }
