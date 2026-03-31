@@ -25,16 +25,42 @@ if (books.length === 0) {
 }
 
 // =====================
+// AUTH TABS SWITCHING
+// =====================
+
+function switchAuthTab(tab) {
+    // Hide all tabs
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    
+    if (loginTab) loginTab.classList.remove('active');
+    if (registerTab) registerTab.classList.remove('active');
+
+    // Remove active class from all buttons
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => btn.classList.remove('active'));
+
+    // Show selected tab
+    if (tab === 'login') {
+        if (loginTab) loginTab.classList.add('active');
+        tabBtns[0].classList.add('active');
+    } else {
+        if (registerTab) registerTab.classList.add('active');
+        tabBtns[1].classList.add('active');
+    }
+}
+
+// =====================
 // PAGE NAVIGATION
 // =====================
 
 function showPage(pageId) {
     console.log('Showing page:', pageId);
     
-    // If not logged in and trying to access protected pages, redirect to login
-    if (!currentUser && ['books', 'profile', 'addBook'].includes(pageId)) {
-        alert('Please login or register first');
-        showPage('login');
+    // If not logged in and trying to access protected pages, redirect to auth
+    if (!currentUser && ['home', 'books', 'profile', 'addBook'].includes(pageId)) {
+        console.log('Not logged in, redirecting to auth');
+        showPage('auth');
         return;
     }
 
@@ -46,6 +72,7 @@ function showPage(pageId) {
     const selectedPage = document.getElementById(pageId);
     if (selectedPage) {
         selectedPage.classList.add('active');
+        console.log('Page shown:', pageId);
 
         // Update navigation based on login status
         updateNavigation();
@@ -62,12 +89,12 @@ function showPage(pageId) {
 }
 
 function updateNavigation() {
-    const navMenu = document.getElementById('navMenu');
+    const navbar = document.getElementById('navbar');
     
-    if (currentUser) {
-        navMenu.style.display = 'flex';
-    } else {
-        navMenu.style.display = 'none';
+    if (currentUser && navbar) {
+        navbar.style.display = 'block';
+    } else if (navbar) {
+        navbar.style.display = 'none';
     }
 }
 
@@ -77,12 +104,15 @@ function updateNavigation() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Page loaded');
+    console.log('Current user:', currentUser);
     
-    // Initialize page
+    // Initialize page based on login status
     if (currentUser) {
-        showPage('books');
-    } else {
+        console.log('User is logged in, showing home');
         showPage('home');
+    } else {
+        console.log('User not logged in, showing auth');
+        showPage('auth');
     }
     updateNavigation();
 
@@ -101,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
 
-            console.log('Username:', username);
+            console.log('Registration data:', { username, email });
 
             // Validation
             if (username.length < 3) {
@@ -144,10 +174,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             alert('Registration successful! Please login.');
             registerForm.reset();
-            showPage('login');
+            switchAuthTab('login');
         });
-    } else {
-        console.log('Register form NOT found');
     }
 
     // =====================
@@ -174,14 +202,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Login successful');
                 alert(`Welcome back, ${user.username}!`);
                 loginForm.reset();
-                showPage('books');
                 updateNavigation();
+                showPage('home');
             } else {
                 alert('Invalid username or password');
             }
         });
-    } else {
-        console.log('Login form NOT found');
     }
 
     // =====================
@@ -231,8 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
             addBookForm.reset();
             showPage('books');
         });
-    } else {
-        console.log('Add book form NOT found');
     }
 });
 
@@ -244,8 +268,8 @@ function logout() {
     currentUser = null;
     localStorage.removeItem('currentUser');
     alert('You have been logged out');
-    showPage('home');
     updateNavigation();
+    showPage('auth');
 }
 
 // =====================
@@ -317,7 +341,7 @@ function deleteBook(bookId) {
 
 function loadProfileData() {
     if (!currentUser) {
-        showPage('login');
+        showPage('auth');
         return;
     }
 
@@ -352,4 +376,4 @@ function displayUserBooks(userBooks) {
         `;
         myBooksList.appendChild(bookCard);
     });
-         }
+}
