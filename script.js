@@ -9,7 +9,7 @@ function saveBooks() { localStorage.setItem('books', JSON.stringify(books)); }
 function saveConversations() { localStorage.setItem('conversations', JSON.stringify(conversations)); }
 function saveCurrentUser() { localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
 
-// Sample demo data if empty
+// Demo data if empty
 if (users.length === 0) {
   users = [
     { id: 1, username: 'alice', email: 'alice@example.com', password: 'pass123' },
@@ -39,18 +39,13 @@ function escapeHtml(s) {
 function shorten(s, n) { if (!s) return ''; return s.length > n ? s.slice(0, n) + '…' : s; }
 function formatTime(ts) { return new Date(ts).toLocaleString(); }
 
-// Auth tabs
+// Auth UI switch
 function switchAuthTab(tab) {
-  document.getElementById('loginTab')?.classList.remove('active');
-  document.getElementById('registerTab')?.classList.remove('active');
-  document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
-  if (tab === 'login') {
-    document.getElementById('loginTab')?.classList.add('active');
-    document.querySelectorAll('.auth-tab-btn')[0]?.classList.add('active');
-  } else {
-    document.getElementById('registerTab')?.classList.add('active');
-    document.querySelectorAll('.auth-tab-btn')[1]?.classList.add('active');
-  }
+  document.getElementById('loginTab')?.classList.toggle('active', tab === 'login');
+  document.getElementById('registerTab')?.classList.toggle('active', tab === 'register');
+  const btns = Array.from(document.querySelectorAll('.auth-tab-btn'));
+  if (btns[0]) btns[0].classList.toggle('active', tab === 'login');
+  if (btns[1]) btns[1].classList.toggle('active', tab === 'register');
 }
 
 // Navigation
@@ -79,7 +74,7 @@ function showPage(pageId) {
   }
 }
 
-// Init
+// Initialization
 document.addEventListener('DOMContentLoaded', () => {
   if (currentUser) showPage('home'); else showPage('auth');
   updateNavigation();
@@ -110,7 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = (document.getElementById('loginUsername')?.value || '').trim();
     const password = (document.getElementById('loginPassword')?.value || '');
     const user = users.find(u => u.username === username && u.password === password);
-    if (!user) { alert('Invalid username or password'); return;; saveCurrentUser(); alert(`Welcome back, ${user.username}!`);
+    if (!user) { alert('Invalid username or password'); return; }
+    currentUser = user; saveCurrentUser(); alert(`Welcome back, ${user.username}!`);
     loginForm.reset();
     updateNavigation();
     renderConversationsList(); updateMessagesNavBadge();
@@ -212,7 +208,7 @@ function displayUserBooks(myBooks) {
   if (!el) return;
   el.innerHTML = '';
   if (!myBooks || myBooks.length === 0) {
-    el.innerHTML = '<div class="empty-state"><p>You have no books yet. <a href="#" onclick="showPage(\\'addBook\\')">Add one</a></p></div>';
+    el.innerHTML = '<div class="empty-state"><p>You have no books yet. <a href="#" onclick="showPage(\'addBook\')">Add one</a></p></div>';
     return;
   }
   myBooks.forEach(book => {
@@ -231,14 +227,13 @@ function displayUserBooks(myBooks) {
     actions.appendChild(del);
     el.appendChild(card);
   });
-}
 
-// Messaging helpers
+  // Messaging helpers
 function getOrCreateConversation(userA, userB, meta = {}) {
-  const participants = [userA, userB].sort((a,b)=>a-b);
+  const participants = [userA, userB].sort((a, b) => a - b);
   let convo = conversations.find(c => c.participants[0] === participants[0] && c.participants[1] === participants[1]);
   if (!convo) {
-    convo = { id: Date.now() + Math.floor(Math.random()*1000), participants, messages: [], meta };
+    convo = { id: Date.now() + Math.floor(Math.random() * 1000), participants, messages: [], meta };
     conversations.unshift(convo); saveConversations();
   } else {
     convo.meta = Object.assign(convo.meta || {}, meta); saveConversations();
@@ -248,12 +243,13 @@ function getOrCreateConversation(userA, userB, meta = {}) {
 
 function addMessageToConversation(convoId, fromId, toId, text) {
   const convo = conversations.find(c => c.id === convoId); if (!convo) return null;
-  const msg = { id: Date.now() + Math.floor(Math.random()*1000), fromId, toId, text, timestamp: Date.now(), read: false };
+  const msg = { id: Date.now() + Math.floor(Math.random() * 1000), fromId, toId, text, timestamp: Date.now(), read: false };
   convo.messages.push(msg);
   conversations = conversations.filter(c => c.id !== convoId); conversations.unshift(convo); saveConversations(); updateMessagesNavBadge();
   return msg;
-        }
-  // Messaging UI 
+} 
+  
+// renderConversationsList
 function renderConversationsList() {
   const listEl = document.getElementById('conversationsList'); if (!listEl) return;
   listEl.innerHTML = '';
@@ -263,7 +259,7 @@ function renderConversationsList() {
   userConvos.forEach(convo => {
     const otherId = convo.participants.find(id => id !== currentUser.id);
     const other = users.find(u => u.id === otherId) || { username: 'Deleted user' };
-    const last = convo.messages.length ? convo.messages[convo.messages.length-1] : null;
+    const last = convo.messages.length ? convo.messages[convo.messages.length - 1] : null;
     const unread = convo.messages.filter(m => m.toId === currentUser.id && !m.read).length;
     const item = document.createElement('div'); item.className = 'conversation-item'; item.onclick = () => openConversation(convo.id);
     item.innerHTML = `
@@ -281,6 +277,7 @@ function renderConversationsList() {
   updateMessagesNavBadge();
 }
 
+// openConversation
 function openConversation(convoId) {
   const chatArea = document.getElementById('chatArea'); if (!chatArea) return;
   const convo = conversations.find(c => c.id === convoId); if (!convo) return;
@@ -312,10 +309,11 @@ function openConversation(convoId) {
   });
   chatMessages.scrollTop = chatMessages.scrollHeight;
   const input = document.getElementById('chatMessageInput'); const btn = document.getElementById('chatSendBtn');
-  btn.onclick = () => { const text = (input.value||'').trim(); if (!text) return; addMessageToConversation(convo.id, currentUser.id, otherId, text); openConversation(convo.id); input.value = ''; };
+  btn.onclick = () => { const text = (input.value || '').trim(); if (!text) return; addMessageToConversation(convo.id, currentUser.id, otherId, text); openConversation(convo.id); input.value = ''; };
   input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); btn.click(); } };
-                         }
-// Integration: contact owner
+}
+
+// contactOwner
 function contactOwner(bookId) {
   if (!currentUser) { alert('Please login to contact owner'); showPage('auth'); return; }
   const book = books.find(b => b.id === bookId); if (!book) { alert('Book not found'); return; }
@@ -327,7 +325,7 @@ function contactOwner(bookId) {
   showPage('messages'); renderConversationsList(); openConversation(convo.id);
 }
 
-// Badge update
+// Part8B — badge + expose globals
 function updateMessagesNavBadge() {
   const nav = document.getElementById('messagesNav'); if (!nav) return;
   if (!currentUser) { nav.innerHTML = 'Messages'; return; }
@@ -335,7 +333,7 @@ function updateMessagesNavBadge() {
   nav.innerHTML = totalUnread > 0 ? `Messages <span class="unread-badge" style="margin-left:6px;vertical-align:middle">${totalUnread}</span>` : 'Messages';
 }
 
-// Expose to global for HTML onclick usage
+// Expose functions globally for HTML onClick usage
 window.showPage = showPage;
 window.switchAuthTab = switchAuthTab;
 window.logout = logout;
