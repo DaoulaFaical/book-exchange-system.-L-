@@ -15,6 +15,7 @@
                 <li><a href="#" onclick="showPage('home')">Home</a></li>
                 <li><a href="#" onclick="showPage('books')">Books</a></li>
                 <li><a href="#" onclick="showPage('profile')">Profile</a></li>
+                <li><a href="#" onclick="showPage('messages')">Messages</a></li>
                 <li><a href="#" onclick="logout()">Logout</a></li>
             </ul>
         </div>
@@ -156,7 +157,24 @@
             </div>
         </div>
     </div>
-
+<!-- MESSAGES PAGE -->
+<div id="messages" class="page">
+    <div class="messages-container">
+        <div class="messages-sidebar">
+            <h2>Conversations</h2>
+            <div id="conversationsList" class="conversations-list">
+                <!-- Conversations will be displayed here -->
+            </div>
+        </div>
+        <div class="messages-main">
+            <div id="chatArea" class="chat-area">
+                <div class="empty-state">
+                    <p>Select a conversation to start messaging</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- PROFILE PAGE -->
     <div id="profile" class="page">
         <div class="profile-container">
