@@ -69,6 +69,13 @@ const Data = {
         if (bookIndex !== -1) {
             this.books.splice(bookIndex, 1);
             this.saveBooks();
+            if (typeof Auth !== 'undefined' && Auth.loadUserBooks) {
+                Auth.loadUserBooks();
+            }
+            if (typeof BooksModule !== 'undefined' && BooksModule.displayBooks) {
+                BooksModule.displayBooks();
+            }
+            Helpers.showNotification('Book deleted successfully', 'success');
             return true;
         }
         return false;
@@ -150,6 +157,7 @@ const Helpers = {
     },
     
     escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -157,24 +165,22 @@ const Helpers = {
     
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = `custom-notification notification-${type}`;
-        notification.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 10000;
-                animation: slideInRight 0.3s ease;
-                max-width: 350px;
-            ">
-                ${this.escapeHtml(message)}
-            </div>
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+            max-width: 350px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
         `;
+        notification.textContent = message;
         
         document.body.appendChild(notification);
         
@@ -243,55 +249,75 @@ const Auth = {
     },
     
     updateUIAfterLogin() {
-        document.getElementById('auth').classList.remove('active');
-        document.getElementById('navbar').style.display = 'block';
-        document.getElementById('home').classList.add('active');
+        const authPage = document.getElementById('auth');
+        const navbar = document.getElementById('navbar');
+        const homePage = document.getElementById('home');
+        
+        if (authPage) authPage.classList.remove('active');
+        if (navbar) navbar.style.display = 'block';
+        if (homePage) homePage.classList.add('active');
         
         // Update profile
-        document.getElementById('profileUsername').textContent = Data.currentUser.username;
-        document.getElementById('profileEmail').textContent = Data.currentUser.email;
+        const profileUsername = document.getElementById('profileUsername');
+        const profileEmail = document.getElementById('profileEmail');
+        if (profileUsername) profileUsername.textContent = Data.currentUser.username;
+        if (profileEmail) profileEmail.textContent = Data.currentUser.email;
         
         // Load user's books
         this.loadUserBooks();
         
-        // Load conversations
-        Notification.updateNotificationBadge();
+        // Update notification badge
+        if (typeof Notification !== 'undefined' && Notification.updateNotificationBadge) {
+            Notification.updateNotificationBadge();
+        }
     },
     
     updateUIAfterLogout() {
-        document.getElementById('navbar').style.display = 'none';
-        document.getElementById('auth').classList.add('active');
+        const navbar = document.getElementById('navbar');
+        const authPage = document.getElementById('auth');
+        
+        if (navbar) navbar.style.display = 'none';
+        if (authPage) authPage.classList.add('active');
         
         // Hide all other pages
         const pages = ['home', 'books', 'addBook', 'messages', 'profile'];
         pages.forEach(page => {
-            document.getElementById(page).classList.remove('active');
+            const element = document.getElementById(page);
+            if (element) element.classList.remove('active');
         });
         
         // Reset forms
-        document.getElementById('loginForm').reset();
-        document.getElementById('registerForm').reset();
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        if (loginForm) loginForm.reset();
+        if (registerForm) registerForm.reset();
     },
     
     loadUserBooks() {
-        const myBooks = Data.getUserBooks(Data.currentUser.id);
-        document.getElementById('profileBooksCount').textContent = myBooks.length;
+        if (!Data.currentUser) return;
         
+        const myBooks = Data.getUserBooks(Data.currentUser.id);
+        const booksCount = document.getElementById('profileBooksCount');
         const container = document.getElementById('myBooksList');
-        if (myBooks.length === 0) {
-            container.innerHTML = '<p class="empty-state">You don\'t have any books yet</p>';
-        } else {
-            container.innerHTML = myBooks.map(book => `
-                <div class="book-card">
-                    <h3>${Helpers.escapeHtml(book.title)}</h3>
-                    <p>${Helpers.escapeHtml(book.author)}</p>
-                    <p><strong>Category:</strong> ${book.category}</p>
-                    <p><strong>Condition:</strong> ${book.condition}</p>
-                    <button onclick="Data.deleteBook(${book.id}, ${Data.currentUser.id})" class="delete-btn">
-                        Delete
-                    </button>
-                </div>
-            `).join('');
+        
+        if (booksCount) booksCount.textContent = myBooks.length;
+        
+        if (container) {
+            if (myBooks.length === 0) {
+                container.innerHTML = '<p class="empty-state">You don\'t have any books yet</p>';
+            } else {
+                container.innerHTML = myBooks.map(book => `
+                    <div class="book-card">
+                        <h3>${Helpers.escapeHtml(book.title)}</h3>
+                        <p><strong>Author:</strong> ${Helpers.escapeHtml(book.author)}</p>
+                        <p><strong>Category:</strong> ${book.category}</p>
+                        <p><strong>Condition:</strong> ${book.condition}</p>
+                        <button onclick="Data.deleteBook(${book.id}, ${Data.currentUser.id})" class="delete-btn">
+                            Delete
+                        </button>
+                    </div>
+                `).join('');
+            }
         }
     }
 };
@@ -299,33 +325,6 @@ const Auth = {
 // ==================== NOTIFICATION MODULE ====================
 const Notification = {
     initRendering() {
-        // Add animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            
-            @keyframes slideOutRight {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-        
         // Check for new messages periodically
         setInterval(() => this.checkNewMessages(), 5000);
     },
@@ -385,11 +384,13 @@ const Conversation = {
     
     renderChatArea(conversation) {
         const chatArea = document.getElementById('chatArea');
+        if (!chatArea) return;
+        
         const otherUser = Data.getUserById(conversation.userId === Data.currentUser.id ? conversation.recipientId : conversation.userId);
         
         chatArea.innerHTML = `
             <div class="chat-header">
-                <h3>${Helpers.escapeHtml(otherUser.username)} - Book: ${Helpers.escapeHtml(conversation.bookTitle)}</h3>
+                <h3>${Helpers.escapeHtml(otherUser?.username || 'User')} - Book: ${Helpers.escapeHtml(conversation.bookTitle)}</h3>
             </div>
             <div class="chat-messages" id="chatMessages">
                 ${this.renderMessages(conversation.messages)}
@@ -405,6 +406,10 @@ const Conversation = {
         if (messagesContainer) {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+        
+        // Focus on input
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) messageInput.focus();
     },
     
     renderMessages(messages) {
@@ -425,6 +430,8 @@ const Conversation = {
     
     sendMessage() {
         const input = document.getElementById('messageInput');
+        if (!input) return;
+        
         const content = input.value.trim();
         
         if (!Helpers.validateMessage(content)) {
@@ -468,8 +475,11 @@ const Conversation = {
 // ==================== BOOKS MODULE ====================
 const BooksModule = {
     displayBooks() {
-        const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-        const category = document.getElementById('categoryFilter')?.value || '';
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        
+        const searchTerm = searchInput?.value.toLowerCase() || '';
+        const category = categoryFilter?.value || '';
         
         let filteredBooks = Data.getBooks();
         
@@ -485,6 +495,8 @@ const BooksModule = {
         }
         
         const container = document.getElementById('booksList');
+        
+        if (!container) return;
         
         if (filteredBooks.length === 0) {
             container.innerHTML = '<div class="empty-state"><p>No books found</p></div>';
@@ -514,12 +526,18 @@ const BooksModule = {
             return;
         }
         
+        const titleInput = document.getElementById('bookTitle');
+        const authorInput = document.getElementById('bookAuthor');
+        const categorySelect = document.getElementById('bookCategory');
+        const descriptionInput = document.getElementById('bookDescription');
+        const conditionInput = document.getElementById('bookCondition');
+        
         const book = {
-            title: document.getElementById('bookTitle').value,
-            author: document.getElementById('bookAuthor').value,
-            category: document.getElementById('bookCategory').value,
-            description: document.getElementById('bookDescription').value,
-            condition: document.getElementById('bookCondition').value,
+            title: titleInput?.value || '',
+            author: authorInput?.value || '',
+            category: categorySelect?.value || '',
+            description: descriptionInput?.value || '',
+            condition: conditionInput?.value || '',
             ownerId: Data.currentUser.id,
             ownerName: Data.currentUser.username
         };
@@ -532,11 +550,17 @@ const BooksModule = {
         Data.addBook(book);
         Helpers.showNotification('Book added successfully!', 'success');
         
-        // Reset form and navigate to books page
-        document.getElementById('addBookForm').reset();
+        // Reset form
+        if (titleInput) titleInput.value = '';
+        if (authorInput) authorInput.value = '';
+        if (categorySelect) categorySelect.value = '';
+        if (descriptionInput) descriptionInput.value = '';
+        if (conditionInput) conditionInput.value = '';
+        
+        // Navigate to books page
         showPage('books');
-        BooksModule.displayBooks();
-        Auth.loadUserBooks();
+        this.displayBooks();
+        if (typeof Auth !== 'undefined') Auth.loadUserBooks();
     }
 };
 
@@ -545,8 +569,10 @@ const ConversationList = {
     displayConversations() {
         if (!Data.currentUser) return;
         
-        const conversatconst conversations = Data.getConversationsByUser(Data.currentUser.id);
+        const conversations = Data.getConversationsByUser(Data.currentUser.id);
         const container = document.getElementById('conversationsList');
+        
+        if (!container) return;
         
         if (conversations.length === 0) {
             container.innerHTML = '<div class="empty-state"><p>No conversations yet</p></div>';
@@ -598,8 +624,9 @@ function showPage(pageName) {
     } else if (pageName === 'messages') {
         ConversationList.displayConversations();
         // Clear chat area if no conversation selected
-        if (!Data.currentConversation) {
-            document.getElementById('chatArea').innerHTML = `
+        const chatArea = document.getElementById('chatArea');
+        if (chatArea && !Data.currentConversation) {
+            chatArea.innerHTML = `
                 <div class="empty-state">
                     <p>Select a conversation to start messaging</p>
                 </div>
@@ -618,15 +645,15 @@ function switchAuthTab(tab) {
     const registerBtn = document.querySelector('.auth-tab-btn:last-child');
     
     if (tab === 'login') {
-        loginTab.classList.add('active');
-        registerTab.classList.remove('active');
-        loginBtn.classList.add('active');
-        registerBtn.classList.remove('active');
+        if (loginTab) loginTab.classList.add('active');
+        if (registerTab) registerTab.classList.remove('active');
+        if (loginBtn) loginBtn.classList.add('active');
+        if (registerBtn) registerBtn.classList.remove('active');
     } else {
-        registerTab.classList.add('active');
-        loginTab.classList.remove('active');
-        registerBtn.classList.add('active');
-        loginBtn.classList.remove('active');
+        if (registerTab) registerTab.classList.add('active');
+        if (loginTab) loginTab.classList.remove('active');
+        if (registerBtn) registerBtn.classList.add('active');
+        if (loginBtn) loginBtn.classList.remove('active');
     }
 }
 
@@ -640,71 +667,71 @@ function logout() {
     Auth.logout();
 }
 
-// ==================== EVENT LISTENERS ====================
-// Login form handler
-document.getElementById('loginForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-    if (Auth.login(username, password)) {
-        showPage('home');
-    }
-});
-
-// Register form handler
-document.getElementById('registerForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('regUsername').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regConfirmPassword').value;
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize data
+    Data.init();
     
-    if (Auth.register(username, email, password, confirmPassword)) {
-        switchAuthTab('login');
-        document.getElementById('registerForm').reset();
+    // Check for existing session
+    const storedUser = localStorage.getItem('book_current_user');
+    if (storedUser) {
+        Data.currentUser = JSON.parse(storedUser);
+        Auth.updateUIAfterLogin();
+        showPage('home');
+    } else {
+        showPage('auth');
     }
-});
-
-// Add book form handler
-document.getElementById('addBookForm')?.addEventListener('submit', (e) => {
-    BooksModule.addBook(e);
-});
-
-// ==================== INIT MODULE ====================
-const Init = {
-    init() {
-        // Initialize data
-        Data.init();
-        
-        // Check for existing session
-        const storedUser = localStorage.getItem('book_current_user');
-        if (storedUser) {
-            Data.currentUser = JSON.parse(storedUser);
-            Auth.updateUIAfterLogin();
-            showPage('home');
-        } else {
-            showPage('auth');
-        }
-        
-        // Initialize notifications
-        Notification.initRendering();
-        
-        // Set up message polling
-        setInterval(() => {
-            if (Data.currentUser && document.getElementById('messages').classList.contains('active')) {
+    
+    // Initialize notifications
+    Notification.initRendering();
+    
+    // Set up conversation refresh
+    setInterval(() => {
+        if (Data.currentUser) {
+            const messagesPage = document.getElementById('messages');
+            if (messagesPage && messagesPage.classList.contains('active')) {
                 ConversationList.displayConversations();
             }
-        }, 3000);
-        
-        // Load books if on books page
-        if (document.getElementById('books').classList.contains('active')) {
-            BooksModule.displayBooks();
+            Notification.updateNotificationBadge();
         }
-    }
-};
-
-// Start the application
-document.addEventListener('DOMContentLoaded', () => {
-    Init.init();
+    }, 3000);
 });
 
+// ==================== EVENT LISTENERS ====================
+// Login form handler
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername')?.value || '';
+        const password = document.getElementById('loginPassword')?.value || '';
+        if (Auth.login(username, password)) {
+            showPage('home');
+        }
+    });
+}
+
+// Register form handler
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('regUsername')?.value || '';
+        const email = document.getElementById('regEmail')?.value || '';
+        const password = document.getElementById('regPassword')?.value || '';
+        const confirmPassword = document.getElementById('regConfirmPassword')?.value || '';
+        
+        if (Auth.register(username, email, password, confirmPassword)) {
+            switchAuthTab('login');
+            registerForm.reset();
+        }
+    });
+}
+
+// Add book form handler
+const addBookForm = document.getElementById('addBookForm');
+if (addBookForm) {
+    addBookForm.addEventListener('submit', (e) => {
+        BooksModule.addBook(e);
+    });
+}
