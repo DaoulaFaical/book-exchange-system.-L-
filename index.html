@@ -22,7 +22,7 @@
     </nav>
 
     <!-- AUTH PAGE (First Page - Login & Register) -->
-    <div id="auth" class="page active full-height">
+    <div id="auth" class="page active">
         <div class="auth-main-container">
             <div class="auth-card-wrapper">
                 <!-- Tabs Header -->
@@ -94,18 +94,18 @@
                 </div>
             </div>
             <div class="features">
-    <div class="feature-card" onclick="showPage('books')" style="cursor: pointer;">
-        <h3>📖 Share Books</h3>
-        <p>List your books and share them with other book lovers</p>
-    </div>
-    <div class="feature-card" onclick="showPage('books')" style="cursor: pointer;">
-        <h3>🔍 Discover</h3>
-        <p>Find books you're looking for in our community</p>
-    </div>
-    <div class="feature-card" onclick="showPage('profile')" style="cursor: pointer;">
-        <h3>💬 Rester en Contact</h3>
-        <p>Rester en contact avec les autres utilisateurs</p>
-    </div>
+                <div class="feature-card" onclick="showPage('books')" style="cursor: pointer;">
+                    <h3>📖 Share Books</h3>
+                    <p>List your books and share them with other book lovers</p>
+                </div>
+                <div class="feature-card" onclick="showPage('books')" style="cursor: pointer;">
+                    <h3>🔍 Discover</h3>
+                    <p>Find books you're looking for in our community</p>
+                </div>
+                <div class="feature-card" onclick="showPage('messages')" style="cursor: pointer;">
+                    <h3>💬 Stay in Touch</h3>
+                    <p>Stay in contact with other users</p>
+                </div>
             </div>
         </div>
     </div>
@@ -157,24 +157,26 @@
             </div>
         </div>
     </div>
-<!-- MESSAGES PAGE -->
-<div id="messages" class="page">
-    <div class="messages-container">
-        <div class="messages-sidebar">
-            <h2>Conversations</h2>
-            <div id="conversationsList" class="conversations-list">
-                <!-- Conversations will be displayed here -->
+
+    <!-- MESSAGES PAGE -->
+    <div id="messages" class="page">
+        <div class="messages-container">
+            <div class="messages-sidebar">
+                <h2>Conversations</h2>
+                <div id="conversationsList" class="conversations-list">
+                    <!-- Conversations will be displayed here -->
+                </div>
             </div>
-        </div>
-        <div class="messages-main">
-            <div id="chatArea" class="chat-area">
-                <div class="empty-state">
-                    <p>Select a conversation to start messaging</p>
+            <div class="messages-main">
+                <div id="chatArea" class="chat-area">
+                    <div class="empty-state">
+                        <p>Select a conversation to start messaging</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
     <!-- PROFILE PAGE -->
     <div id="profile" class="page">
         <div class="profile-container">
@@ -195,5 +197,6 @@
         </div>
     </div>
 
+    <script src="script.js"></script>
 </body>
-</html>
+            </html>
