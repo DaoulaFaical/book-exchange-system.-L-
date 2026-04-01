@@ -1,174 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Book Exchange</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Exchange System</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- NAV (visible only after login) -->
-  <nav class="navbar" id="navbar" style="display: none;">
-    <div class="nav-container">
-      <div class="logo">📚 Book Exchange</div>
-      <ul class="nav-menu">
-        <li><a href="#" onclick="showPage('home')">Home</a></li>
-        <li><a href="#" onclick="showPage('books')">Books</a></li>
-        <li><a href="#" onclick="showPage('profile')">Profile</a></li>
-        <li><a id="messagesNav" href="#" onclick="showPage('messages')">Messages</a></li>
-        <li><a href="#" onclick="showPage('addBook')">Add Book</a></li>
-        <li><a href="#" onclick="logout()">Logout</a></li>
-      </ul>
+    <!-- Navbar (visible only when logged in) -->
+    <nav class="navbar" id="navbar" style="display: none;">
+        <div class="nav-container">
+            <div class="logo">📚 Book Exchange</div>
+            <ul class="nav-menu">
+                <li><a href="#" onclick="showPage('home')">Home</a></li>
+                <li><a href="#" onclick="showPage('books')">Books</a></li>
+                <li><a href="#" onclick="showPage('profile')">Profile</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- AUTH PAGE (First Page - Login & Register) -->
+    <div id="auth" class="page active full-height">
+        <div class="auth-main-container">
+            <div class="auth-card-wrapper">
+                <!-- Tabs Header -->
+                <div class="auth-tabs-header">
+                    <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Login</button>
+                    <button class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+                </div>
+
+                <!-- Login Tab -->
+                <div id="loginTab" class="auth-tab-content active">
+                    <div class="auth-card">
+                        <h1>📚 Book Exchange</h1>
+                        <h2>Login to Your Account</h2>
+                        <p class="auth-subtitle">Share and discover books with our community</p>
+                        
+                        <form id="loginForm" class="auth-form">
+                            <div class="form-group">
+                                <input type="text" id="loginUsername" placeholder="Username" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="loginPassword" placeholder="Password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Login</button>
+                        </form>
+                        
+                        <p class="auth-footer">Don't have an account? Click on <strong>Register</strong> above</p>
+                    </div>
+                </div>
+
+                <!-- Register Tab -->
+                <div id="registerTab" class="auth-tab-content">
+                    <div class="auth-card">
+                        <h1>📚 Book Exchange</h1>
+                        <h2>Create New Account</h2>
+                        <p class="auth-subtitle">Join our community and start sharing books</p>
+                        
+                        <form id="registerForm" class="auth-form">
+                            <div class="form-group">
+                                <input type="text" id="regUsername" placeholder="Username" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="regEmail" placeholder="Email" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="regPassword" placeholder="Password" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full">Register</button>
+                        </form>
+                        
+                        <p class="auth-footer">Already have an account? Click on <strong>Login</strong> above</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </nav>
 
-  <!-- AUTH PAGE (login + register tabs) -->
-  <div id="auth" class="page active full-height">
-    <div class="auth-main-container">
-      <div class="auth-card-wrapper">
-        <div class="auth-tabs-header">
-          <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Login</button>
-          <button class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+    <!-- HOME PAGE (After Login) -->
+    <div id="home" class="page">
+        <div class="landing-page">
+            <div class="hero">
+                <h1>Welcome to Book Exchange System</h1>
+                <p>Share, Exchange, and Discover Books with Our Community</p>
+                <div class="hero-buttons">
+                    <button onclick="showPage('books')" class="btn btn-primary">Browse Books</button>
+                    <button onclick="showPage('addBook')" class="btn btn-secondary">Add Your Book</button>
+                </div>
+            </div>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>📖 Share Books</h3>
+                    <p>List your books and share them with other book lovers</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔍 Discover</h3>
+                    <p>Find books you're looking for in our community</p>
+                </div>
+                <div class="feature-card">
+                    <h3>👥 Connect</h3>
+                    <p>Connect with other book enthusiasts</p>
+                </div>
+            </div>
         </div>
-
-        <div id="loginTab" class="auth-tab-content active">
-          <div class="auth-card">
-            <h1>📚 Book Exchange</h1>
-            <h2>Login</h2>
-            <p class="auth-subtitle">Please sign in to continue</p>
-            <form id="loginForm" class="auth-form">
-              <div class="form-group"><input id="loginUsername" type="text" placeholder="Username" required /></div>
-              <div class="form-group"><input id="loginPassword" type="password" placeholder="Password" required /></div>
-              <button type="submit" class="btn btn-primary btn-full">Login</button>
-            </form>
-            <p class="auth-footer">Don't have an account? Click Register</p>
-          </div>
-        </div>
-
-        <div id="registerTab" class="auth-tab-content">
-          <div class="auth-card">
-            <h1>📚 Book Exchange</h1>
-            <h2>Create account</h2>
-            <p class="auth-subtitle">Join the community</p>
-            <form id="registerForm" class="auth-form">
-              <div class="form-group"><input id="regUsername" type="text" placeholder="Username" required /></div>
-              <div class="form-group"><input id="regEmail" type="email" placeholder="Email" required /></div>
-              <div class="form-group"><input id="regPassword" type="password" placeholder="Password" required /></div>
-              <div class="form-group"><input id="regConfirmPassword" type="password" placeholder="Confirm password" required /></div>
-              <button type="submit" class="btn btn-primary btn-full">Register</button>
-            </form>
-            <p class="auth-footer">Already have an account? Click Login</p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- HOME (after login) -->
-  <div id="home" class="page">
-    <div class="landing-page">
-      <div class="hero">
-        <h1>Welcome to Book Exchange</h1>
-        <p>Share, exchange and discover books in your community</p>
-        <div class="hero-buttons">
-          <button onclick="showPage('books')" class="btn btn-primary">Browse Books</button>
-          <button onclick="showPage('addBook')" class="btn btn-secondary">Add Your Book</button>
+    <!-- BOOKS PAGE -->
+    <div id="books" class="page">
+        <div class="books-container">
+            <div class="books-header">
+                <h2>Available Books</h2>
+                <button onclick="showPage('addBook')" class="btn btn-primary">+ Add Book</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search books..." onkeyup="filterBooks()">
+                <select id="categoryFilter" onchange="filterBooks()">
+                    <option value="">All Categories</option>
+                    <option value="fiction">Fiction</option>
+                    <option value="non-fiction">Non-Fiction</option>
+                    <option value="science">Science</option>
+                    <option value="history">History</option>
+                    <option value="romance">Romance</option>
+                </select>
+            </div>
+            <div id="booksList" class="books-grid">
+                <!-- Books will be displayed here -->
+            </div>
         </div>
-      </div>
+    </div>
 
-      <div class="features">
-        <div class="feature-card" onclick="showPage('addBook')" style="cursor:pointer">
-          <h3>🔄 Exchange Books</h3>
-          <p>Share and exchange books with members</p>
+    <!-- ADD BOOK PAGE -->
+    <div id="addBook" class="page">
+        <div class="form-container">
+            <div class="form-box">
+                <h2>Add a New Book</h2>
+                <form id="addBookForm">
+                    <input type="text" id="bookTitle" placeholder="Book Title" required>
+                    <input type="text" id="bookAuthor" placeholder="Author" required>
+                    <select id="bookCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="fiction">Fiction</option>
+                        <option value="non-fiction">Non-Fiction</option>
+                        <option value="science">Science</option>
+                        <option value="history">History</option>
+                        <option value="romance">Romance</option>
+                    </select>
+                    <textarea id="bookDescription" placeholder="Description"></textarea>
+                    <input type="text" id="bookCondition" placeholder="Condition (e.g., Good, Like New)">
+                    <button type="submit" class="btn btn-primary">Add Book</button>
+                </form>
+            </div>
         </div>
-        <div class="feature-card" onclick="showPage('books')" style="cursor:pointer">
-          <h3>🔍 Discover</h3>
-          <p>Find books available for exchange</p>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="profile" class="page">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h2>My Profile</h2>
+            </div>
+            <div class="profile-info">
+                <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+                <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                <p><strong>Books Listed:</strong> <span id="profileBooksCount">0</span></p>
+            </div>
+            <div class="profile-books">
+                <h3>My Books</h3>
+                <div id="myBooksList" class="books-grid">
+                    <!-- User's books will be displayed here -->
+                </div>
+            </div>
         </div>
-        <div class="feature-card" onclick="showPage('messages')" style="cursor:pointer">
-          <h3>💬 Stay in Touch</h3>
-          <p>Message other users to organize exchanges</p>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- BOOKS -->
-  <div id="books" class="page">
-    <div class="books-container">
-      <div class="books-header">
-        <h2>Available Books</h2>
-        <button onclick="showPage('addBook')" class="btn btn-primary">+ Add Book</button>
-      </div>
-      <div class="search-bar">
-        <input id="searchInput" type="text" placeholder="Search books..." onkeyup="filterBooks()" />
-        <select id="categoryFilter" onchange="filterBooks()">
-          <option value="">All Categories</option>
-          <option value="fiction">Fiction</option>
-          <option value="non-fiction">Non-Fiction</option>
-          <option value="science">Science</option>
-          <option value="history">History</option>
-          <option value="romance">Romance</option>
-        </select>
-      </div>
-      <div id="booksList" class="books-grid"></div>
-    </div>
-  </div>
-
-  <!-- ADD BOOK -->
-  <div id="addBook" class="page">
-    <div class="form-container">
-      <div class="form-box">
-        <h2>Add a Book</h2>
-        <form id="addBookForm">
-          <input id="bookTitle" type="text" placeholder="Book title" required />
-          <input id="bookAuthor" type="text" placeholder="Author" required />
-          <select id="bookCategory" required>
-            <option value="">Select category</option>
-            <option value="fiction">Fiction</option>
-            <option value="non-fiction">Non-Fiction</option>
-            <option value="science">Science</option>
-            <option value="history">History</option>
-            <option value="romance">Romance</option>
-          </select>
-          <textarea id="bookDescription" placeholder="Description"></textarea>
-          <input id="bookCondition" type="text" placeholder="Condition (e.g., Good, Like New)" />
-          <button type="submit" class="btn btn-primary">Add Book</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- MESSAGES -->
-  <div id="messages" class="page">
-    <div class="messages-container">
-      <div class="messages-sidebar">
-        <h2>Conversations</h2>
-        <div id="conversationsList" class="conversations-list"></div>
-      </div>
-      <div class="messages-main">
-        <div id="chatArea" class="chat-area">
-          <div class="empty-state"><p>Select a conversation to start messaging</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROFILE -->
-  <div id="profile" class="page">
-    <div class="profile-container">
-      <div class="profile-header"><h2>My Profile</h2></div>
-      <div class="profile-info">
-        <p><strong>Username:</strong> <span id="profileUsername"></span></p>
-        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-        <p><strong>Books Listed:</strong> <span id="profileBooksCount">0</span></p>
-      </div>
-      <div class="profile-books">
-        <h3>My Books</h3>
-        <div id="myBooksList" class="books-grid"></div>
-      </div>
-    </div>
-  </div>
-
+    <script src="script.js"></script>
 </body>
-              </html>
+</html>
