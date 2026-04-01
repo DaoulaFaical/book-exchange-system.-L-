@@ -1,537 +1,341 @@
-// =====================
-// DATA STORAGE (LocalStorage)
-// =====================
-
+// Data and persistence
 let users = JSON.parse(localStorage.getItem('users')) || [];
 let books = JSON.parse(localStorage.getItem('books')) || [];
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let conversations = JSON.parse(localStorage.getItem('conversations')) || [];
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
-// Sample demo data (only if empty)
-if (users.length === 0) {
-    users = [
-        { id: 1, username: 'john_doe', email: 'john@example.com', password: 'password123' },
-        { id: 2, username: 'jane_smith', email: 'jane@example.com', password: 'password123' }
-    ];
-    localStorage.setItem('users', JSON.stringify(users));
-}
-if (books.length === 0) {
-    books = [
-        { id: 1, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', category: 'fiction', description: 'A classic novel about the American Dream', condition: 'Like New', owner: 'john_doe', ownerId: 1 },
-        { id: 2, title: 'Sapiens', author: 'Yuval Noah Harari', category: 'non-fiction', description: 'A brief history of humankind', condition: 'Good', owner: 'jane_smith', ownerId: 2 }
-    ];
-    localStorage.setItem('books', JSON.stringify(books));
-}
-if (conversations.length === 0) {
-    // start empty
-    localStorage.setItem('conversations', JSON.stringify(conversations));
-}
-
-// Helpers to persist
 function saveUsers() { localStorage.setItem('users', JSON.stringify(users)); }
 function saveBooks() { localStorage.setItem('books', JSON.stringify(books)); }
-function saveCurrentUser() { localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
 function saveConversations() { localStorage.setItem('conversations', JSON.stringify(conversations)); }
+function saveCurrentUser() { localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
 
-// =====================
-// AUTH TABS SWITCHING
-// =====================
-
-function switchAuthTab(tab) {
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const tabBtns = document.querySelectorAll('.auth-tab-btn');
-
-    if (loginTab) loginTab.classList.remove('active');
-    if (registerTab) registerTab.classList.remove('active');
-    tabBtns.forEach(btn => btn.classList.remove('active'));
-
-    if (tab === 'login') {
-        if (loginTab) loginTab.classList.add('active');
-        if (tabBtns[0]) tabBtns[0].classList.add('active');
-    } else {
-        if (registerTab) registerTab.classList.add('active');
-        if (tabBtns[1]) tabBtns[1].classList.add('active');
-    }
+// Sample demo data if empty
+if (users.length === 0) {
+  users = [
+    { id: 1, username: 'alice', email: 'alice@example.com', password: 'pass123' },
+    { id: 2, username: 'bob', email: 'bob@example.com', password: 'pass123' }
+  ];
+  saveUsers();
+}
+if (books.length === 0) {
+  books = [
+    { id: 1, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', category: 'fiction', description: 'Classic novel', condition: 'Good', owner: 'alice', ownerId: 1 },
+    { id: 2, title: 'Sapiens', author: 'Yuval Noah Harari', category: 'non-fiction', description: 'History of humankind', condition: 'Good', owner: 'bob', ownerId: 2 }
+  ];
+  saveBooks();
+}
+if (!Array.isArray(conversations)) {
+  conversations = [];
+  saveConversations();
 }
 
-// =====================
-// PAGE NAVIGATION
-// =====================
+// Utilities
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"'`=\/]/g, function (c) {
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;' })[c];
+  });
+}
+function shorten(s, n) { if (!s) return ''; return s.length > n ? s.slice(0, n) + '…' : s; }
+function formatTime(ts) { return new Date(ts).toLocaleString(); }
+
+// Auth tabs
+function switchAuthTab(tab) {
+  document.getElementById('loginTab')?.classList.remove('active');
+  document.getElementById('registerTab')?.classList.remove('active');
+  document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+  if (tab === 'login') {
+    document.getElementById('loginTab')?.classList.add('active');
+    document.querySelectorAll('.auth-tab-btn')[0]?.classList.add('active');
+  } else {
+    document.getElementById('registerTab')?.classList.add('active');
+    document.querySelectorAll('.auth-tab-btn')[1]?.classList.add('active');
+  }
+}
+
+// Navigation
+function updateNavigation() {
+  const nav = document.getElementById('navbar');
+  if (nav) nav.style.display = currentUser ? 'block' : 'none';
+  updateMessagesNavBadge();
+}
 
 function showPage(pageId) {
-    // If not logged in and page is protected, redirect to auth
-    const protectedPages = ['home', 'books', 'profile', 'addBook', 'messages'];
-    if (!currentUser && protectedPages.includes(pageId)) {
-        pageId = 'auth';
-    }
+  const protectedPages = ['home','books','profile','addBook','messages'];
+  if (!currentUser && protectedPages.includes(pageId)) pageId = 'auth';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId)?.classList.add('active');
 
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(p => p.classList.remove('active'));
+  updateNavigation();
 
-    const selected = document.getElementById(pageId);
-    if (selected) selected.classList.add('active');
-
-    updateNavigation();
-
-    // Load dynamic content
-    if (pageId === 'books') displayBooks();
-    if (pageId === 'profile') loadProfileData();
-    if (pageId === 'messages') {
-        renderConversationsList();
-        // show placeholder if nothing selected
-        const chatArea = document.getElementById('chatArea');
-        if (chatArea && chatArea.innerHTML.trim() === '') {
-            chatArea.innerHTML = '<div class="empty-state"><p>Sélectionnez une conversation pour commencer</p></div>';
-        }
-    }
-}
-
-function updateNavigation() {
-    const navbar = document.getElementById('navbar');
-    if (navbar) {
-        navbar.style.display = currentUser ? 'block' : 'none';
-    }
-    updateMessagesNavBadge();
-}
-
-// =====================
-// INITIALIZATION
-// =====================
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Show auth or home depending on login
-    if (currentUser) showPage('home');
-    else showPage('auth');
-
-    updateNavigation();
-
-    // Register form
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const username = (document.getElementById('regUsername')?.value || '').trim();
-            const email = (document.getElementById('regEmail')?.value || '').trim();
-            const password = (document.getElementById('regPassword')?.value || '');
-            const confirmPassword = (document.getElementById('regConfirmPassword')?.value || '');
-
-            if (username.length < 3) { alert('Le nom d\'utilisateur doit contenir au moins 3 caractères'); return; }
-            if (!email.includes('@')) { alert('Entrez une adresse email valide'); return; }
-            if (password.length < 6) { alert('Le mot de passe doit contenir au moins 6 caractères'); return; }
-            if (password !== confirmPassword) { alert('Les mots de passe ne correspondent pas'); return; }
-            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { alert('Nom d\'utilisateur déjà utilisé'); return; }
-
-            const newUser = {
-                id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-                username,
-                email,
-                password
-            };
-            users.push(newUser);
-            saveUsers();
-            alert('Inscription réussie. Connectez-vous maintenant.');
-            registerForm.reset();
-            switchAuthTab('login');
-        });
-    }
-
-    // Login form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const username = (document.getElementById('loginUsername')?.value || '').trim();
-            const password = (document.getElementById('loginPassword')?.value || '');
-
-            const user = users.find(u => u.username === username && u.password === password);
-            if (user) {
-                currentUser = user;
-                saveCurrentUser();
-                alert(`Bienvenue ${user.username} !`);
-                loginForm.reset();
-                updateNavigation();
-                // ensure messages list and badge updated
-                renderConversationsList();
-                updateMessagesNavBadge();
-                showPage('home');
-            } else {
-                alert('Nom d\'utilisateur ou mot de passe invalide');
-            }
-        });
-    }
-
-    // Add book form
-    const addBookForm = document.getElementById('addBookForm');
-    if (addBookForm) {
-        addBookForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            if (!currentUser) { alert('Veuillez vous connecter pour ajouter un livre'); showPage('auth'); return; }
-            const title = (document.getElementById('bookTitle')?.value || '').trim();
-            const author = (document.getElementById('bookAuthor')?.value || '').trim();
-            const category = (document.getElementById('bookCategory')?.value || '').trim();
-            const description = (document.getElementById('bookDescription')?.value || '').trim();
-            const condition = (document.getElementById('bookCondition')?.value || '').trim();
-
-            if (!title || !author || !category) { alert('Remplissez les champs requis'); return; }
-
-            const newBook = {
-                id: books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1,
-                title,
-                author,
-                category,
-                description: description || 'Pas de description',
-                condition: condition || 'Non spécifié',
-                owner: currentUser.username,
-                ownerId: currentUser.id
-            };
-            books.push(newBook);
-            saveBooks();
-            alert('Livre ajouté avec succès');
-            addBookForm.reset();
-            showPage('books');
-        });
-    }
-
-    // initial render for messages nav
+  if (pageId === 'books') displayBooks();
+  if (pageId === 'profile') loadProfileData();
+  if (pageId === 'messages') {
     renderConversationsList();
-    updateMessagesNavBadge();
+    const chatArea = document.getElementById('chatArea');
+    if (chatArea && chatArea.innerHTML.trim() === '') {
+      chatArea.innerHTML = '<div class="empty-state"><p>Select a conversation to start messaging</p></div>';
+    }
+  }
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  if (currentUser) showPage('home'); else showPage('auth');
+  updateNavigation();
+
+  // Register
+  const registerForm = document.getElementById('registerForm');
+  registerForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = (document.getElementById('regUsername')?.value || '').trim();
+    const email = (document.getElementById('regEmail')?.value || '').trim();
+    const password = (document.getElementById('regPassword')?.value || '');
+    const confirm = (document.getElementById('regConfirmPassword')?.value || '');
+    if (username.length < 3) { alert('Username must be at least 3 characters'); return; }
+    if (!email.includes('@')) { alert('Enter a valid email'); return; }
+    if (password.length < 6) { alert('Password must be at least 6 characters'); return; }
+    if (password !== confirm) { alert('Passwords do not match'); return; }
+    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { alert('Username already exists'); return; }
+    const newUser = { id: users.length ? Math.max(...users.map(u => u.id)) + 1 : 1, username, email, password };
+    users.push(newUser); saveUsers();
+    alert('Registration successful. Please login.');
+    registerForm.reset(); switchAuthTab('login');
+  });
+
+  // Login
+  const loginForm = document.getElementById('loginForm');
+  loginForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = (document.getElementById('loginUsername')?.value || '').trim();
+    const password = (document.getElementById('loginPassword')?.value || '');
+    const user = users.find(u => u.username === username && u.password === password);
+    if (!user) { alert('Invalid username or password'); return;; saveCurrentUser(); alert(`Welcome back, ${user.username}!`);
+    loginForm.reset();
+    updateNavigation();
+    renderConversationsList(); updateMessagesNavBadge();
+    showPage('home');
+  });
+
+  // Add book
+  const addBookForm = document.getElementById('addBookForm');
+  addBookForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!currentUser) { alert('Please login to add a book'); showPage('auth'); return; }
+    const title = (document.getElementById('bookTitle')?.value || '').trim();
+    const author = (document.getElementById('bookAuthor')?.value || '').trim();
+    const category = (document.getElementById('bookCategory')?.value || '').trim();
+    const description = (document.getElementById('bookDescription')?.value || '').trim();
+    const condition = (document.getElementById('bookCondition')?.value || '').trim();
+    if (!title || !author || !category) { alert('Please fill required fields'); return; }
+    const newBook = {
+      id: books.length ? Math.max(...books.map(b => b.id)) + 1 : 1,
+      title, author, category,
+      description: description || 'No description',
+      condition: condition || 'Not specified',
+      owner: currentUser.username,
+      ownerId: currentUser.id
+    };
+    books.push(newBook); saveBooks();
+    alert('Book added'); addBookForm.reset(); showPage('books');
+  });
+
+  // initial message list
+  renderConversationsList(); updateMessagesNavBadge();
 });
 
-// =====================
-// LOGOUT
-// =====================
-
+// Logout
 function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    updateNavigation();
-    alert('Déconnecté');
-    showPage('auth');
+  currentUser = null; localStorage.removeItem('currentUser'); updateNavigation(); alert('Logged out'); showPage('auth');
 }
 
-// =====================
-// BOOKS MANAGEMENT
-// =====================
-
+// Books display
 function displayBooks() {
-    const booksList = document.getElementById('booksList');
-    if (!booksList) return;
-    booksList.innerHTML = '';
-
-    if (books.length === 0) {
-        booksList.innerHTML = '<div class="empty-state"><p>Aucun livre disponible pour le moment.</p></div>';
-        return;
+  const booksList = document.getElementById('booksList');
+  if (!booksList) return;
+  booksList.innerHTML = '';
+  if (books.length === 0) { booksList.innerHTML = '<div class="empty-state"><p>No books yet.</p></div>'; return; }
+  books.forEach(book => {
+    const owner = users.find(u => u.id === book.ownerId) || { username: book.owner || 'Unknown' };
+    const card = document.createElement('div'); card.className = 'book-card';
+    card.innerHTML = `
+      <h3>${escapeHtml(book.title)}</h3>
+      <p><strong>Author:</strong> ${escapeHtml(book.author)}</p>
+      <p><strong>Category:</strong> <span class="badge">${escapeHtml(book.category)}</span></p>
+      <p><strong>Description:</strong> ${escapeHtml(book.description)}</p>
+      <p><strong>Condition:</strong> ${escapeHtml(book.condition)}</p>
+      <p class="book-owner">📖 Listed by: ${escapeHtml(owner.username)}</p>
+      <div class="book-actions"></div>
+    `;
+    const actions = card.querySelector('.book-actions');
+    if (currentUser && currentUser.id === book.ownerId) {
+      const del = document.createElement('button'); del.className = 'delete-btn'; del.textContent = 'Delete';
+      del.onclick = () => { if (confirm('Delete this book?')) deleteBook(book.id); };
+      actions.appendChild(del);
+    } else {
+      const contact = document.createElement('button'); contact.className = 'btn btn-secondary'; contact.textContent = 'Contact owner';
+      contact.onclick = () => contactOwner(book.id);
+      actions.appendChild(contact);
     }
-
-    books.forEach(book => {
-        const owner = users.find(u => u.id === book.ownerId) || { username: book.owner || 'Inconnu' };
-        const card = document.createElement('div');
-        card.className = 'book-card';
-        card.innerHTML = `
-            <h3>${escapeHtml(book.title)}</h3>
-            <p><strong>Auteur:</strong> ${escapeHtml(book.author)}</p>
-            <p><strong>Catégorie:</strong> <span class="badge">${escapeHtml(book.category)}</span></p>
-            <p><strong>Description:</strong> ${escapeHtml(book.description)}</p>
-            <p><strong>Etat:</strong> ${escapeHtml(book.condition)}</p>
-            <p class="book-owner">📖 Listé par: ${escapeHtml(owner.username)}</p>
-            <div class="book-actions"></div>
-        `;
-        const actions = card.querySelector('.book-actions');
-
-        if (currentUser && currentUser.id === book.ownerId) {
-            const del = document.createElement('button');
-            del.className = 'delete-btn';
-            del.textContent = 'Supprimer';
-            del.onclick = () => {
-                if (confirm('Supprimer ce livre ?')) {
-                    deleteBook(book.id);
-                }
-            };
-            actions.appendChild(del);
-        } else {
-            const contact = document.createElement('button');
-            contact.className = 'btn btn-secondary';
-            contact.textContent = 'Contacter le propriétaire';
-            contact.onclick = () => contactOwner(book.id);
-            actions.appendChild(contact);
-        }
-
-        booksList.appendChild(card);
-    });
+    booksList.appendChild(card);
+  });
 }
 
 function filterBooks() {
-    const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
-    const category = (document.getElementById('categoryFilter')?.value || '').toLowerCase();
-    const booksList = document.getElementById('booksList');
-    if (!booksList) return;
-
-    const cards = booksList.querySelectorAll('.book-card');
-    cards.forEach(card => {
-        const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
-        const text = card.textContent.toLowerCase();
-        const cat = (card.querySelector('.badge')?.textContent || '').toLowerCase();
-
-        const matchesSearch = title.includes(search) || text.includes(search);
-        const matchesCategory = !category || cat === category;
-
-        card.style.display = (matchesSearch && matchesCategory) ? 'block' : 'none';
-    });
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const cat = (document.getElementById('categoryFilter')?.value || '').toLowerCase();
+  document.querySelectorAll('#booksList .book-card').forEach(card => {
+    const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
+    const text = card.textContent.toLowerCase();
+    const badge = (card.querySelector('.badge')?.textContent || '').toLowerCase();
+    const show = (title.includes(q) || text.includes(q)) && (!cat || badge === cat);
+    card.style.display = show ? 'block' : 'none';
+  });
 }
 
-function deleteBook(bookId) {
-    books = books.filter(b => b.id !== bookId);
-    saveBooks();
-    displayBooks();
+function deleteBook(id) {
+  books = books.filter(b => b.id !== id); saveBooks(); displayBooks();
 }
 
-// =====================
-// PROFILE
-// =====================
-
+// Profile
 function loadProfileData() {
-    if (!currentUser) { showPage('auth'); return; }
-    document.getElementById('profileUsername').textContent = currentUser.username;
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    const userBooks = books.filter(b => b.ownerId === currentUser.id);
-    document.getElementById('profileBooksCount').textContent = userBooks.length;
-    displayUserBooks(userBooks);
+  if (!currentUser) { showPage('auth'); return; }
+  document.getElementById('profileUsername').textContent = currentUser.username;
+  document.getElementById('profileEmail').textContent = currentUser.email;
+  const myBooks = books.filter(b => b.ownerId === currentUser.id);
+  document.getElementById('profileBooksCount').textContent = myBooks.length;
+  displayUserBooks(myBooks);
 }
 
-function displayUserBooks(userBooks) {
-    const myBooksList = document.getElementById('myBooksList');
-    if (!myBooksList) return;
-    myBooksList.innerHTML = '';
-    if (userBooks.length === 0) {
-        myBooksList.innerHTML = '<div class="empty-state"><p>Vous n\'avez pas encore listé de livres. <a href="#" onclick="showPage(\\'addBook\\')">Ajoutez-en un</a></p></div>';
-        return;
-    }
-    userBooks.forEach(book => {
-        const card = document.createElement('div');
-        card.className = 'book-card';
-        card.innerHTML = `
-            <h3>${escapeHtml(book.title)}</h3>
-            <p><strong>Auteur:</strong> ${escapeHtml(book.author)}</p>
-            <p><strong>Catégorie:</strong> <span class="badge">${escapeHtml(book.category)}</span></p>
-            <p><strong>Description:</strong> ${escapeHtml(book.description)}</p>
-            <p><strong>Etat:</strong> ${escapeHtml(book.condition)}</p>
-            <div class="book-actions"></div>
-        `;
-        const actions = card.querySelector('.book-actions');
-        const del = document.createElement('button');
-        del.className = 'delete-btn';
-        del.textContent = 'Supprimer';
-        del.onclick = () => {
-            if (confirm('Supprimer ce livre ?')) deleteBook(book.id);
-        };
-        actions.appendChild(del);
-        myBooksList.appendChild(card);
-    });
+function displayUserBooks(myBooks) {
+  const el = document.getElementById('myBooksList');
+  if (!el) return;
+  el.innerHTML = '';
+  if (!myBooks || myBooks.length === 0) {
+    el.innerHTML = '<div class="empty-state"><p>You have no books yet. <a href="#" onclick="showPage(\\'addBook\\')">Add one</a></p></div>';
+    return;
+  }
+  myBooks.forEach(book => {
+    const card = document.createElement('div'); card.className = 'book-card';
+    card.innerHTML = `
+      <h3>${escapeHtml(book.title)}</h3>
+      <p><strong>Author:</strong> ${escapeHtml(book.author)}</p>
+      <p><strong>Category:</strong> <span class="badge">${escapeHtml(book.category)}</span></p>
+      <p><strong>Description:</strong> ${escapeHtml(book.description)}</p>
+      <p><strong>Condition:</strong> ${escapeHtml(book.condition)}</p>
+      <div class="book-actions"></div>
+    `;
+    const actions = card.querySelector('.book-actions');
+    const del = document.createElement('button'); del.className = 'delete-btn'; del.textContent = 'Delete';
+    del.onclick = () => { if (confirm('Delete this book?')) deleteBook(book.id); };
+    actions.appendChild(del);
+    el.appendChild(card);
+  });
 }
 
-// =====================
-// MESSAGING DATA + HELPERS
-// =====================
-
-function formatTime(ts) {
-    const d = new Date(ts);
-    return d.toLocaleString();
-}
-
-function getOrCreateConversation(userAId, userBId, createMeta = {}) {
-    const participants = [userAId, userBId].sort((a, b) => a - b);
-    let convo = conversations.find(c => c.participants[0] === participants[0] && c.participants[1] === participants[1]);
-    if (!convo) {
-        convo = {
-            id: Date.now() + Math.floor(Math.random() * 1000),
-            participants,
-            messages: [],
-            meta: createMeta
-        };
-        conversations.unshift(convo);
-        saveConversations();
-    } else {
-        // ensure meta from createMeta merged if provided
-        convo.meta = Object.assign(convo.meta || {}, createMeta);
-        saveConversations();
-    }
-    return convo;
+// Messaging helpers
+function getOrCreateConversation(userA, userB, meta = {}) {
+  const participants = [userA, userB].sort((a,b)=>a-b);
+  let convo = conversations.find(c => c.participants[0] === participants[0] && c.participants[1] === participants[1]);
+  if (!convo) {
+    convo = { id: Date.now() + Math.floor(Math.random()*1000), participants, messages: [], meta };
+    conversations.unshift(convo); saveConversations();
+  } else {
+    convo.meta = Object.assign(convo.meta || {}, meta); saveConversations();
+  }
+  return convo;
 }
 
 function addMessageToConversation(convoId, fromId, toId, text) {
-    const convo = conversations.find(c => c.id === convoId);
-    if (!convo) return null;
-    const msg = {
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        fromId,
-        toId,
-        text,
-        timestamp: Date.now(),
-        read: false
-    };
-    convo.messages.push(msg);
-    // move to top
-    conversations = conversations.filter(c => c.id !== convoId);
-    conversations.unshift(convo);
-    saveConversations();
-    updateMessagesNavBadge();
-    return msg;
-}
-
-// =====================
-// MESSAGING UI FUNCTIONS
-// =====================
-
+  const convo = conversations.find(c => c.id === convoId); if (!convo) return null;
+  const msg = { id: Date.now() + Math.floor(Math.random()*1000), fromId, toId, text, timestamp: Date.now(), read: false };
+  convo.messages.push(msg);
+  conversations = conversations.filter(c => c.id !== convoId); conversations.unshift(convo); saveConversations(); updateMessagesNavBadge();
+  return msg;
+        }
+  // Messaging UI 
 function renderConversationsList() {
-    const listEl = document.getElementById('conversationsList');
-    if (!listEl) return;
-    listEl.innerHTML = '';
-
-    if (!currentUser) {
-        listEl.innerHTML = '<p class="empty-state">Connectez-vous pour voir vos conversations</p>';
-        updateMessagesNavBadge();
-        return;
-    }
-
-    const userConvos = conversations.filter(c => c.participants.includes(currentUser.id));
-    if (userConvos.length === 0) {
-        listEl.innerHTML = '<p class="empty-state">Aucune conversation pour le moment. Contacter un propriétaire pour commencer.</p>';
-        updateMessagesNavBadge();
-        return;
-    }
-
-    userConvos.forEach(convo => {
-        const otherId = convo.participants.find(id => id !== currentUser.id);
-        const otherUser = users.find(u => u.id === otherId) || { username: 'Utilisateur supprimé' };
-        const lastMsg = convo.messages.length > 0 ? convo.messages[convo.messages.length - 1] : null;
-        const unreadCount = convo.messages.filter(m => m.toId === currentUser.id && !m.read).length;
-
-        const item = document.createElement('div');
-        item.className = 'conversation-item';
-        item.onclick = () => openConversation(convo.id);
-        item.innerHTML = `
-            <div class="conversation-main">
-                <div class="conversation-user">${escapeHtml(otherUser.username)}</div>
-                <div class="conversation-last">${lastMsg ? escapeHtml(shorten(lastMsg.text, 60)) : 'Démarrer une conversation'}</div>
-            </div>
-            <div class="conversation-meta">
-                <div style="font-size:.75rem;color:#7f8c8d">${lastMsg ? formatTime(lastMsg.timestamp) : ''}</div>
-                ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : ''}
-            </div>
-        `;
-        listEl.appendChild(item);
-    });
-
-    updateMessagesNavBadge();
+  const listEl = document.getElementById('conversationsList'); if (!listEl) return;
+  listEl.innerHTML = '';
+  if (!currentUser) { listEl.innerHTML = '<p class="empty-state">Login to see conversations</p>'; updateMessagesNavBadge(); return; }
+  const userConvos = conversations.filter(c => c.participants.includes(currentUser.id));
+  if (userConvos.length === 0) { listEl.innerHTML = '<p class="empty-state">No conversations yet. Contact an owner to start.</p>'; updateMessagesNavBadge(); return; }
+  userConvos.forEach(convo => {
+    const otherId = convo.participants.find(id => id !== currentUser.id);
+    const other = users.find(u => u.id === otherId) || { username: 'Deleted user' };
+    const last = convo.messages.length ? convo.messages[convo.messages.length-1] : null;
+    const unread = convo.messages.filter(m => m.toId === currentUser.id && !m.read).length;
+    const item = document.createElement('div'); item.className = 'conversation-item'; item.onclick = () => openConversation(convo.id);
+    item.innerHTML = `
+      <div style="flex:1">
+        <div style="font-weight:800;color:var(--primary)">${escapeHtml(other.username)}</div>
+        <div style="color:var(--muted);font-size:.95rem">${last ? escapeHtml(shorten(last.text, 60)) : 'Start a conversation'}</div>
+      </div>
+      <div style="text-align:right;min-width:80px">
+        <div style="font-size:.75rem;color:var(--muted)">${last ? formatTime(last.timestamp) : ''}</div>
+        ${unread ? `<div class="unread-badge">${unread}</div>` : ''}
+      </div>
+    `;
+    listEl.appendChild(item);
+  });
+  updateMessagesNavBadge();
 }
 
 function openConversation(convoId) {
-    const chatArea = document.getElementById('chatArea');
-    if (!chatArea) return;
-    const convo = conversations.find(c => c.id === convoId);
-    if (!convo) return;
-    if (!currentUser) { alert('Veuillez vous connecter'); showPage('auth'); return; }
-
-    const otherId = convo.participants.find(id => id !== currentUser.id);
-    const otherUser = users.find(u => u.id === otherId) || { username: 'Utilisateur supprimé' };
-
-    // mark as read for messages to currentUser
-    convo.messages.forEach(m => { if (m.toId === currentUser.id) m.read = true; });
-    saveConversations();
-    renderConversationsList();
-
-    // Build chat UI
-    chatArea.innerHTML = `
-        <div class="chat-header">
-            <div>
-                <div style="font-weight:800;color:var(--primary-color)">${escapeHtml(otherUser.username)}</div>
-                <div style="font-size:.9rem;color:#7f8c8d">${convo.meta && convo.meta.title ? 'À propos: ' + escapeHtml(convo.meta.title) : ''}</div>
-            </div>
-            <div style="font-size:.85rem;color:#7f8c8d">${convo.messages.length} message(s)</div>
-        </div>
-        <div id="chatMessages" class="chat-messages"></div>
-        <div class="chat-input">
-            <input id="chatMessageInput" type="text" placeholder="Écrire un message..." />
-            <button id="chatSendBtn" class="btn btn-primary">Envoyer</button>
-        </div>
-    `;
-
-    const chatMessagesEl = document.getElementById('chatMessages');
-    convo.messages.forEach(m => {
-        const msgEl = document.createElement('div');
-        msgEl.className = 'msg ' + (m.fromId === currentUser.id ? 'me' : 'them');
-        msgEl.innerHTML = `<div>${escapeHtml(m.text)}</div><div class="msg-meta">${m.fromId === currentUser.id ? 'Vous' : escapeHtml(otherUser.username)} • ${formatTime(m.timestamp)}</div>`;
-        chatMessagesEl.appendChild(msgEl);
-    });
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-
-    const input = document.getElementById('chatMessageInput');
-    const sendBtn = document.getElementById('chatSendBtn');
-    sendBtn.onclick = () => {
-        const text = (input.value || '').trim();
-        if (!text) return;
-        addMessageToConversation(convo.id, currentUser.id, otherId, text);
-        openConversation(convo.id); // refresh
-    };
-    input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); sendBtn.click(); } };
-}
-
-// =====================
-// INTEGRATION BOOKS <-> MESSAGES
-// =====================
-
+  const chatArea = document.getElementById('chatArea'); if (!chatArea) return;
+  const convo = conversations.find(c => c.id === convoId); if (!convo) return;
+  if (!currentUser) { alert('Please login'); showPage('auth'); return; }
+  const otherId = convo.participants.find(id => id !== currentUser.id);
+  const other = users.find(u => u.id === otherId) || { username: 'Deleted user' };
+  // mark read
+  convo.messages.forEach(m => { if (m.toId === currentUser.id) m.read = true; });
+  saveConversations(); renderConversationsList();
+  chatArea.innerHTML = `
+    <div class="chat-header">
+      <div>
+        <div style="font-weight:800;color:var(--primary)">${escapeHtml(other.username)}</div>
+        <div style="font-size:.9rem;color:var(--muted)">${convo.meta && convo.meta.title ? 'About: ' + escapeHtml(convo.meta.title) : ''}</div>
+      </div>
+      <div style="font-size:.85rem;color:var(--muted)">${convo.messages.length} message(s)</div>
+    </div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-input">
+      <input id="chatMessageInput" type="text" placeholder="Write a message..." />
+      <button id="chatSendBtn" class="btn btn-primary">Send</button>
+    </div>
+  `;
+  const chatMessages = document.getElementById('chatMessages');
+  convo.messages.forEach(m => {
+    const el = document.createElement('div'); el.className = 'msg ' + (m.fromId === currentUser.id ? 'me' : 'them');
+    el.innerHTML = `<div>${escapeHtml(m.text)}</div><div class="msg-meta">${m.fromId === currentUser.id ? 'You' : escapeHtml(other.username)} • ${formatTime(m.timestamp)}</div>`;
+    chatMessages.appendChild(el);
+  });
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  const input = document.getElementById('chatMessageInput'); const btn = document.getElementById('chatSendBtn');
+  btn.onclick = () => { const text = (input.value||'').trim(); if (!text) return; addMessageToConversation(convo.id, currentUser.id, otherId, text); openConversation(convo.id); input.value = ''; };
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); btn.click(); } };
+                         }
+// Integration: contact owner
 function contactOwner(bookId) {
-    if (!currentUser) { alert('Veuillez vous connecter pour contacter le propriétaire.'); showPage('auth'); return; }
-    const book = books.find(b => b.id === bookId);
-    if (!book) { alert('Livre introuvable'); return; }
-    if (book.ownerId === currentUser.id) { alert('Ceci est votre livre'); return; }
-
-    const convo = getOrCreateConversation(currentUser.id, book.ownerId, { bookId: book.id, title: book.title });
-    // attach meta
-    convo.meta = Object.assign(convo.meta || {}, { bookId: book.id, title: book.title });
-    saveConversations();
-
-    const intro = `Bonjour ${book.owner}, je suis intéressé(e) par votre livre "${book.title}". Êtes-vous disponible pour en discuter ?`;
-    addMessageToConversation(convo.id, currentUser.id, book.ownerId, intro);
-
-        showPage('messages');
-    renderConversationsList();
-    openConversation(convo.id);
+  if (!currentUser) { alert('Please login to contact owner'); showPage('auth'); return; }
+  const book = books.find(b => b.id === bookId); if (!book) { alert('Book not found'); return; }
+  if (book.ownerId === currentUser.id) { alert('This is your book'); return; }
+  const convo = getOrCreateConversation(currentUser.id, book.ownerId, { bookId: book.id, title: book.title });
+  convo.meta = Object.assign(convo.meta || {}, { bookId: book.id, title: book.title }); saveConversations();
+  const intro = `Hi ${book.owner}, I'm interested in your book "${book.title}". Are you available to discuss?`;
+  addMessageToConversation(convo.id, currentUser.id, book.ownerId, intro);
+  showPage('messages'); renderConversationsList(); openConversation(convo.id);
 }
 
+// Badge update
 function updateMessagesNavBadge() {
-    const nav = document.getElementById('messagesNav');
-    if (!nav) return;
-    if (!currentUser) {
-        nav.innerHTML = 'Messages';
-        return;
-    }
-    const totalUnread = conversations.reduce((sum, c) => {
-        return sum + c.messages.filter(m => m.toId === currentUser.id && !m.read).length;
-    }, 0);
-    nav.innerHTML = totalUnread > 0
-        ? `Messages <span class="unread-badge" style="margin-left:6px;vertical-align:middle">${totalUnread}</span>`
-        : 'Messages';
+  const nav = document.getElementById('messagesNav'); if (!nav) return;
+  if (!currentUser) { nav.innerHTML = 'Messages'; return; }
+  const totalUnread = conversations.reduce((sum, c) => sum + c.messages.filter(m => m.toId === currentUser.id && !m.read).length, 0);
+  nav.innerHTML = totalUnread > 0 ? `Messages <span class="unread-badge" style="margin-left:6px;vertical-align:middle">${totalUnread}</span>` : 'Messages';
 }
 
-// =====================
-// UTIL / MISC
-// =====================
-
-function shorten(text, n) {
-    if (!text) return '';
-    return text.length > n ? text.slice(0, n) + '…' : text;
-}
-
-function escapeHtml(unsafe) {
-    if (unsafe === null || unsafe === undefined) return '';
-    return String(unsafe).replace(/[&<>"'`=\/]/g, function (s) {
-        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;' })[s];
-    });
-}
-
-// expose functions to global (so onclick in HTML works)
+// Expose to global for HTML onclick usage
 window.showPage = showPage;
 window.switchAuthTab = switchAuthTab;
 window.logout = logout;
