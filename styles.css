@@ -33,12 +33,6 @@ body {
     display: block;
 }
 
-.page.full-height {
-    min-height: 100vh;
-    padding: 0;
-    max-width: 100%;
-}
-
 /* =====================
    NAVBAR
    ===================== */
@@ -60,6 +54,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .logo {
@@ -72,6 +68,7 @@ body {
     display: flex;
     list-style: none;
     gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .nav-menu a {
@@ -96,6 +93,12 @@ body {
     min-height: 100vh;
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     padding: 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
 }
 
 .auth-card-wrapper {
@@ -364,7 +367,7 @@ body {
 
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
 }
 
@@ -375,7 +378,6 @@ body {
     padding: 1.5rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: all 0.3s;
-    cursor: pointer;
 }
 
 .book-card:hover {
@@ -386,6 +388,7 @@ body {
 .book-card h3 {
     color: var(--primary-color);
     margin-bottom: 0.5rem;
+    font-size: 1.2rem;
 }
 
 .book-card p {
@@ -410,6 +413,11 @@ body {
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
+}
+
+.contact-btn {
+    width: 100%;
+    margin-top: 1rem;
 }
 
 .delete-btn {
@@ -439,6 +447,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 80px);
+    padding: 2rem;
 }
 
 .form-box {
@@ -517,98 +526,9 @@ body {
 }
 
 /* =====================
-   EMPTY STATE
+   MESSAGES / CHAT STYLES
    ===================== */
 
-.empty-state {
-    text-align: center;
-    padding: 3rem 2rem;
-    color: #7f8c8d;
-}
-
-.empty-state p {
-    font-size: 1.1rem;
-}
-
-.empty-state a {
-    color: var(--secondary-color);
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.empty-state a:hover {
-    text-decoration: underline;
-}
-
-/* =====================
-   RESPONSIVE
-   ===================== */
-
-@media (max-width: 768px) {
-    .nav-menu {
-        gap: 1rem;
-    }
-
-    .hero h1 {
-        font-size: 1.8rem;
-    }
-
-    .hero p {
-        font-size: 1rem;
-    }
-
-    .auth-card {
-        padding: 2rem 1.5rem;
-    }
-
-    .books-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .search-bar {
-        flex-direction: column;
-    }
-
-    .search-bar input,
-    .search-bar select {
-        min-width: auto;
-        flex: auto;
-    }
-}
-
-@media (max-width: 480px) {
-    .nav-menu {
-        gap: 0.5rem;
-        font-size: 0.9rem;
-    }
-
-    .hero h1 {
-        font-size: 1.5rem;
-    }
-
-    .books-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .hero-buttons {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
-    .auth-card h1 {
-        font-size: 1.5rem;
-    }
-
-    .auth-card h2 {
-        font-size: 1.2rem;
-    }
-  }
-/* MESSAGES / CHAT STYLES */
 .messages-container {
     display: flex;
     gap: 1.5rem;
@@ -646,6 +566,7 @@ body {
     align-items: center;
     gap: .6rem;
     transition: background 0.15s;
+    border: 1px solid var(--border-color);
 }
 
 .conversation-item:hover {
@@ -681,12 +602,17 @@ body {
     min-width: 60px;
 }
 
+.conversation-time {
+    font-size: 0.7rem;
+    color: #95a5a6;
+}
+
 .unread-badge {
     background: var(--accent-color);
     color: white;
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: 700;
 }
 
@@ -718,6 +644,7 @@ body {
     flex-direction: column;
     gap: 0.65rem;
     padding: 0.75rem 0;
+    max-height: 500px;
 }
 
 .msg {
@@ -743,7 +670,7 @@ body {
 }
 
 .msg-meta {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #7f8c8d;
     margin-top: 0.3rem;
     text-align: right;
@@ -763,6 +690,12 @@ body {
     padding: 0.65rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    font-size: 1rem;
+}
+
+.chat-input input[type="text"]:focus {
+    outline: none;
+    border-color: var(--secondary-color);
 }
 
 .chat-input button {
@@ -770,18 +703,116 @@ body {
     border-radius: 8px;
 }
 
-/* Small screens */
-@media (max-width: 900px) {
+/* =====================
+   EMPTY STATE
+   ===================== */
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #7f8c8d;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+}
+
+/* =====================
+   RESPONSIVE
+   ===================== */
+
+@media (max-width: 768px) {
+    .nav-menu {
+        gap: 1rem;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .auth-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .books-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+
+    .search-bar input,
+    .search-bar select {
+        min-width: auto;
+        flex: auto;
+    }
+    
     .messages-container {
         flex-direction: column;
     }
 
     .messages-sidebar {
         width: 100%;
-        max-height: 220px;
+        max-height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-menu {
+        gap: 0.5rem;
+        font-size: 0.9rem;
     }
 
-    .messages-main {
-        max-height: calc(100vh - 420px);
+    .hero h1 {
+        font-size: 1.5rem;
     }
+
+    .books-grid {
+        grid-template-columns: 1fr;
     }
+
+    .hero-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .auth-card h1 {
+        font-size: 1.5rem;
+    }
+
+    .auth-card h2 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Animation for notifications */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+        }
