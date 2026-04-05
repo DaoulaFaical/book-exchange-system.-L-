@@ -1,82 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Exchange System</title>
+    <title>Kitap Değişim Sistemi | Tokat Gaziosmanpaşa Üniversitesi</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Navbar (visible only when logged in) -->
     <nav class="navbar" id="navbar" style="display: none;">
         <div class="nav-container">
-            <div class="logo">📚 Book Exchange</div>
+            <div class="logo">
+                <span class="logo-icon">📚</span>
+                <span class="logo-text">Kitap Değişim Sistemi</span>
+            </div>
             <ul class="nav-menu">
-                <li><a href="#" onclick="showPage('home')">Home</a></li>
-                <li><a href="#" onclick="showPage('books')">Books</a></li>
-                <li><a href="#" onclick="showPage('profile')">Profile</a></li>
-                <li><a href="#" onclick="showPage('messages')">Messages</a></li>
-                <li><a href="#" onclick="logout()">Logout</a></li>
+                <li><a href="#" onclick="showPage('home')">Ana Sayfa</a></li>
+                <li><a href="#" onclick="showPage('books')">Kitaplar</a></li>
+                <li><a href="#" onclick="showPage('profile')">Profilim</a></li>
+                <li><a href="#" onclick="showPage('messages')">Mesajlar</a></li>
+                <li><a href="#" onclick="logout()">Çıkış Yap</a></li>
             </ul>
         </div>
     </nav>
 
-    <!-- AUTH PAGE (First Page - Login & Register) -->
+    <!-- AUTH PAGE (Login & Register) -->
     <div id="auth" class="page active">
         <div class="auth-main-container">
             <div class="auth-card-wrapper">
+                <div class="university-header">
+                    <h3>TOKAT GAZİOSMANPAŞA ÜNİVERSİTESİ</h3>
+                    <p>İktisat ve İdare Bilimleri Fakültesi</p>
+                    <p class="dept-name">İşletme Bölümü | Yönetim Bilişim Sistemi</p>
+                </div>
+                
                 <!-- Tabs Header -->
                 <div class="auth-tabs-header">
-                    <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Login</button>
-                    <button class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+                    <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Giriş Yap</button>
+                    <button class="auth-tab-btn" onclick="switchAuthTab('register')">Kayıt Ol</button>
                 </div>
 
                 <!-- Login Tab -->
                 <div id="loginTab" class="auth-tab-content active">
                     <div class="auth-card">
-                        <h1>📚 Book Exchange</h1>
-                        <h2>Login to Your Account</h2>
-                        <p class="auth-subtitle">Share and discover books with our community</p>
+                        <h1>📚 Kitap Değişim Sistemi</h1>
+                        <h2>Hesabınıza Giriş Yapın</h2>
+                        <p class="auth-subtitle">Topluluğumuzla kitap paylaşın ve keşfedin</p>
                         
                         <form id="loginForm" class="auth-form">
                             <div class="form-group">
-                                <input type="text" id="loginUsername" placeholder="Username" required>
+                                <input type="text" id="loginUsername" placeholder="Kullanıcı Adı" required>
                             </div>
                             <div class="form-group">
-                                <input type="password" id="loginPassword" placeholder="Password" required>
+                                <input type="password" id="loginPassword" placeholder="Şifre" required>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-full">Login</button>
+                            <button type="submit" class="btn btn-primary btn-full">Giriş Yap</button>
                         </form>
                         
-                        <p class="auth-footer">Don't have an account? Click on <strong>Register</strong> above</p>
+                        <p class="auth-footer">Hesabınız yok mu? <strong>Kayıt Ol</strong> butonuna tıklayın</p>
                     </div>
                 </div>
 
                 <!-- Register Tab -->
                 <div id="registerTab" class="auth-tab-content">
                     <div class="auth-card">
-                        <h1>📚 Book Exchange</h1>
-                        <h2>Create New Account</h2>
-                        <p class="auth-subtitle">Join our community and start sharing books</p>
+                        <h1>📚 Kitap Değişim Sistemi</h1>
+                        <h2>Yeni Hesap Oluşturun</h2>
+                        <p class="auth-subtitle">Topluluğumuza katılın ve kitap paylaşmaya başlayın</p>
                         
                         <form id="registerForm" class="auth-form">
                             <div class="form-group">
-                                <input type="text" id="regUsername" placeholder="Username" required>
+                                <input type="text" id="regUsername" placeholder="Kullanıcı Adı" required>
                             </div>
                             <div class="form-group">
-                                <input type="email" id="regEmail" placeholder="Email" required>
+                                <input type="email" id="regEmail" placeholder="E-posta" required>
                             </div>
                             <div class="form-group">
-                                <input type="password" id="regPassword" placeholder="Password" required>
+                                <input type="password" id="regPassword" placeholder="Şifre" required>
                             </div>
                             <div class="form-group">
-                                <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                                <input type="password" id="regConfirmPassword" placeholder="Şifre Tekrar" required>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-full">Register</button>
+                            <button type="submit" class="btn btn-primary btn-full">Kayıt Ol</button>
                         </form>
                         
-                        <p class="auth-footer">Already have an account? Click on <strong>Login</strong> above</p>
+                        <p class="auth-footer">Zaten hesabınız var mı? <strong>Giriş Yap</strong> butonuna tıklayın</p>
                     </div>
+                </div>
+                
+                <div class="project-footer">
+                    <p>Tokat 2026 | YBS Projesi - Kitap Değişim Sistemi</p>
                 </div>
             </div>
         </div>
@@ -86,26 +99,63 @@
     <div id="home" class="page">
         <div class="landing-page">
             <div class="hero">
-                <h1>Welcome to Book Exchange System</h1>
-                <p>Share, Exchange, and Discover Books with Our Community</p>
+                <h1>📚 Kitap Değişim Sistemi'ne Hoş Geldiniz</h1>
+                <p>Topluluğumuzla Kitap Paylaşın, Değiştirin ve Keşfedin</p>
                 <div class="hero-buttons">
-                    <button onclick="showPage('books')" class="btn btn-primary">Browse Books</button>
-                    <button onclick="showPage('addBook')" class="btn btn-secondary">Add Your Book</button>
+                    <button onclick="showPage('books')" class="btn btn-primary">Kitapları İncele</button>
+                    <button onclick="showPage('addBook')" class="btn btn-secondary">Kitap Ekle</button>
                 </div>
             </div>
+            
+            <!-- Proje Bilgi Kartları -->
+            <div class="project-info-section">
+                <div class="info-card">
+                    <h3>🎯 Misyonumuz</h3>
+                    <p>Öğrencilerin üniversitelerindeki diğer öğrencilerle akademik kitap alışverişi yapmalarını sağlayan basit ve verimli bir sistem geliştirmek.</p>
+                </div>
+                <div class="info-card">
+                    <h3>👁️ Vizyonumuz</h3>
+                    <p>Öğrencilerin eğitim maliyetlerini düşürmelerine yardımcı olan ve öğrenciler arasında işbirliğini teşvik eden, yaygın olarak kullanılan bir platform haline gelmek.</p>
+                </div>
+            </div>
+            
             <div class="features">
                 <div class="feature-card" onclick="showPage('books')" style="cursor: pointer;">
-                    <h3>📖 Share Books</h3>
-                    <p>List your books and share them with other book lovers</p>
+                    <h3>📖 Kitap Paylaş</h3>
+                    <p>Kitaplarınızı listeleyin ve diğer kitap severlerle paylaşın</p>
                 </div>
                 <div class="feature-card" onclick="showPage('books')" style="cursor: pointer;">
-                    <h3>🔍 Discover</h3>
-                    <p>Find books you're looking for in our community</p>
+                    <h3>🔍 Keşfet</h3>
+                    <p>Topluluğumuzda aradığınız kitapları bulun</p>
                 </div>
                 <div class="feature-card" onclick="showPage('messages')" style="cursor: pointer;">
-                    <h3>💬 Stay in Touch</h3>
-                    <p>Stay in contact with other users</p>
+                    <h3>💬 İletişim</h3>
+                    <p>Diğer kullanıcılarla iletişime geçin</p>
                 </div>
+            </div>
+            
+            <!-- Proje Ekibi -->
+            <div class="team-section">
+                <h3>Proje Ekibi</h3>
+                <div class="team-members">
+                    <div class="team-member">
+                        <p><strong>İSSEİNE DAOULA FAICAL</strong></p>
+                        <p>230201673</p>
+                    </div>
+                    <div class="team-member">
+                        <p><strong>MAHAMAT ALCHERİF MAHAMAT ABDARAHMANE</strong></p>
+                        <p>210201680</p>
+                    </div>
+                    <div class="team-member">
+                        <p><strong>NOEL LORİANE NGOUEGNI MEGAN</strong></p>
+                        <p>220201703</p>
+                    </div>
+                    <div class="team-member">
+                        <p><strong>MAHAMADOU SALEH SOUBİANE</strong></p>
+                        <p>220201663</p>
+                    </div>
+                </div>
+                <p class="advisor"><strong>Ders Sorumlusu:</strong> DÖÇ. Dr. ADEM TÜZEMEN</p>
             </div>
         </div>
     </div>
@@ -114,18 +164,19 @@
     <div id="books" class="page">
         <div class="books-container">
             <div class="books-header">
-                <h2>Available Books</h2>
-                <button onclick="showPage('addBook')" class="btn btn-primary">+ Add Book</button>
+                <h2>📖 Mevcut Kitaplar</h2>
+                <button onclick="showPage('addBook')" class="btn btn-primary">+ Kitap Ekle</button>
             </div>
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search books..." onkeyup="filterBooks()">
+                <input type="text" id="searchInput" placeholder="Kitap ara..." onkeyup="filterBooks()">
                 <select id="categoryFilter" onchange="filterBooks()">
-                    <option value="">All Categories</option>
-                    <option value="fiction">Fiction</option>
-                    <option value="non-fiction">Non-Fiction</option>
-                    <option value="science">Science</option>
-                    <option value="history">History</option>
-                    <option value="romance">Romance</option>
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="fiction">Roman</option>
+                    <option value="non-fiction">Akademik</option>
+                    <option value="science">Bilim</option>
+                    <option value="history">Tarih</option>
+                    <option value="economics">Ekonomi</option>
+                    <option value="business">İşletme</option>
                 </select>
             </div>
             <div id="booksList" class="books-grid">
@@ -138,21 +189,22 @@
     <div id="addBook" class="page">
         <div class="form-container">
             <div class="form-box">
-                <h2>Add a New Book</h2>
+                <h2>📚 Yeni Kitap Ekle</h2>
                 <form id="addBookForm">
-                    <input type="text" id="bookTitle" placeholder="Book Title" required>
-                    <input type="text" id="bookAuthor" placeholder="Author" required>
+                    <input type="text" id="bookTitle" placeholder="Kitap Adı" required>
+                    <input type="text" id="bookAuthor" placeholder="Yazar" required>
                     <select id="bookCategory" required>
-                        <option value="">Select Category</option>
-                        <option value="fiction">Fiction</option>
-                        <option value="non-fiction">Non-Fiction</option>
-                        <option value="science">Science</option>
-                        <option value="history">History</option>
-                        <option value="romance">Romance</option>
+                        <option value="">Kategori Seçin</option>
+                        <option value="fiction">Roman</option>
+                        <option value="non-fiction">Akademik</option>
+                        <option value="science">Bilim</option>
+                        <option value="history">Tarih</option>
+                        <option value="economics">Ekonomi</option>
+                        <option value="business">İşletme</option>
                     </select>
-                    <textarea id="bookDescription" placeholder="Description"></textarea>
-                    <input type="text" id="bookCondition" placeholder="Condition (e.g., Good, Like New)">
-                    <button type="submit" class="btn btn-primary">Add Book</button>
+                    <textarea id="bookDescription" placeholder="Kitap Açıklaması"></textarea>
+                    <input type="text" id="bookCondition" placeholder="Durum (Yeni, İyi, Orta)">
+                    <button type="submit" class="btn btn-primary">Kitap Ekle</button>
                 </form>
             </div>
         </div>
@@ -162,7 +214,7 @@
     <div id="messages" class="page">
         <div class="messages-container">
             <div class="messages-sidebar">
-                <h2>Conversations</h2>
+                <h2>💬 Konuşmalar</h2>
                 <div id="conversationsList" class="conversations-list">
                     <!-- Conversations will be displayed here -->
                 </div>
@@ -170,7 +222,7 @@
             <div class="messages-main">
                 <div id="chatArea" class="chat-area">
                     <div class="empty-state">
-                        <p>Select a conversation to start messaging</p>
+                        <p>Mesajlaşmak için bir konuşma seçin</p>
                     </div>
                 </div>
             </div>
@@ -181,15 +233,15 @@
     <div id="profile" class="page">
         <div class="profile-container">
             <div class="profile-header">
-                <h2>My Profile</h2>
+                <h2>👤 Profilim</h2>
             </div>
             <div class="profile-info">
-                <p><strong>Username:</strong> <span id="profileUsername"></span></p>
-                <p><strong>Email:</strong> <span id="profileEmail"></span></p>
-                <p><strong>Books Listed:</strong> <span id="profileBooksCount">0</span></p>
+                <p><strong>Kullanıcı Adı:</strong> <span id="profileUsername"></span></p>
+                <p><strong>E-posta:</strong> <span id="profileEmail"></span></p>
+                <p><strong>Eklenen Kitaplar:</strong> <span id="profileBooksCount">0</span></p>
             </div>
             <div class="profile-books">
-                <h3>My Books</h3>
+                <h3>📚 Kitaplarım</h3>
                 <div id="myBooksList" class="books-grid">
                     <!-- User's books will be displayed here -->
                 </div>
@@ -199,4 +251,4 @@
 
     <script src="script.js"></script>
 </body>
-            </html>
+    </html>
