@@ -8,9 +8,9 @@ const Data = {
     
     init() {
         // Load data from localStorage
-        const storedUsers = localStorage.getItem('book_users');
-        const storedBooks = localStorage.getItem('book_books');
-        const storedConversations = localStorage.getItem('book_conversations');
+        const storedUsers = localStorage.getItem('kds_users');
+        const storedBooks = localStorage.getItem('kds_books');
+        const storedConversations = localStorage.getItem('kds_conversations');
         
         this.users = storedUsers ? JSON.parse(storedUsers) : [];
         this.books = storedBooks ? JSON.parse(storedBooks) : [];
@@ -19,9 +19,10 @@ const Data = {
         // Add demo users if empty
         if (this.users.length === 0) {
             this.users = [
-                { id: 1, username: 'john_doe', email: 'john@example.com', password: '123456' },
-                { id: 2, username: 'jane_smith', email: 'jane@example.com', password: '123456' },
-                { id: 3, username: 'mike_wilson', email: 'mike@example.com', password: '123456' }
+                { id: 1, username: 'ahmet_yilmaz', email: 'ahmet@example.com', password: '123456', fullName: 'Ahmet Yılmaz', department: 'İşletme' },
+                { id: 2, username: 'ayse_demir', email: 'ayse@example.com', password: '123456', fullName: 'Ayşe Demir', department: 'İktisat' },
+                { id: 3, username: 'mehmet_kaya', email: 'mehmet@example.com', password: '123456', fullName: 'Mehmet Kaya', department: 'Yönetim Bilişim Sistemleri' },
+                { id: 4, username: 'zeynep_celik', email: 'zeynep@example.com', password: '123456', fullName: 'Zeynep Çelik', department: 'İşletme' }
             ];
             this.saveUsers();
         }
@@ -29,24 +30,26 @@ const Data = {
         // Add demo books if empty
         if (this.books.length === 0) {
             this.books = [
-                { id: 1, title: "The Little Prince", author: "Antoine de Saint-Exupéry", category: "fiction", description: "A classic of literature", condition: "Good condition", ownerId: 1, ownerName: "john_doe" },
-                { id: 2, title: "Sapiens", author: "Yuval Noah Harari", category: "history", description: "A brief history of humankind", condition: "Like new", ownerId: 2, ownerName: "jane_smith" },
-                { id: 3, title: "1984", author: "George Orwell", category: "fiction", description: "Dystopian novel", condition: "Very good", ownerId: 1, ownerName: "john_doe" }
+                { id: 1, title: "Yönetim Bilişim Sistemleri", author: "Kenneth C. Laudon", category: "business", description: "Yönetim Bilişim Sistemleri ders kitabı", condition: "İyi durumda", ownerId: 1, ownerName: "ahmet_yilmaz" },
+                { id: 2, title: "İşletme Yönetiminin Temelleri", author: "Stephen P. Robbins", category: "business", description: "İşletme yönetimi temel kavramlar", condition: "Yeni gibi", ownerId: 2, ownerName: "ayse_demir" },
+                { id: 3, title: "Mikroekonomi", author: "Gregory Mankiw", category: "economics", description: "Ekonomiye giriş kitabı", condition: "Çok iyi", ownerId: 3, ownerName: "mehmet_kaya" },
+                { id: 4, title: "Pazarlama İlkeleri", author: "Philip Kotler", category: "business", description: "Pazarlama temel kavramlar", condition: "İyi", ownerId: 1, ownerName: "ahmet_yilmaz" },
+                { id: 5, title: "Veri Tabanı Yönetim Sistemleri", author: "Ramez Elmasri", category: "science", description: "Veritabanı ders kitabı", condition: "Yeni", ownerId: 4, ownerName: "zeynep_celik" }
             ];
             this.saveBooks();
         }
     },
     
     saveUsers() {
-        localStorage.setItem('book_users', JSON.stringify(this.users));
+        localStorage.setItem('kds_users', JSON.stringify(this.users));
     },
     
     saveBooks() {
-        localStorage.setItem('book_books', JSON.stringify(this.books));
+        localStorage.setItem('kds_books', JSON.stringify(this.books));
     },
     
     saveConversations() {
-        localStorage.setItem('book_conversations', JSON.stringify(this.conversations));
+        localStorage.setItem('kds_conversations', JSON.stringify(this.conversations));
     },
     
     getBooks() {
@@ -75,7 +78,7 @@ const Data = {
             if (typeof BooksModule !== 'undefined' && BooksModule.displayBooks) {
                 BooksModule.displayBooks();
             }
-            Helpers.showNotification('Book deleted successfully', 'success');
+            Helpers.showNotification('Kitap başarıyla silindi', 'success');
             return true;
         }
         return false;
@@ -148,12 +151,12 @@ const Helpers = {
         const now = new Date();
         const diff = now - d;
         
-        if (diff < 60000) return 'Just now';
-        if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
-        if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
-        if (diff < 604800000) return `${Math.floor(diff / 86400000)} days ago`;
+        if (diff < 60000) return 'Şimdi';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)} dakika önce`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)} saat önce`;
+        if (diff < 604800000) return `${Math.floor(diff / 86400000)} gün önce`;
         
-        return d.toLocaleDateString();
+        return d.toLocaleDateString('tr-TR');
     },
     
     escapeHtml(text) {
@@ -165,15 +168,20 @@ const Helpers = {
     
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
+        let bgColor = '#3498db';
+        if (type === 'error') bgColor = '#e74c3c';
+        if (type === 'success') bgColor = '#27ae60';
+        if (type === 'warning') bgColor = '#f39c12';
+        
         notification.style.cssText = `
             position: fixed;
             top: 80px;
             right: 20px;
-            background: ${type === 'error' ? '#e74c3c' : type === 'success' ? '#27ae60' : '#3498db'};
+            background: ${bgColor};
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             z-index: 10000;
             animation: slideInRight 0.3s ease;
             max-width: 350px;
@@ -192,6 +200,18 @@ const Helpers = {
     
     validateMessage(message) {
         return message && message.trim().length > 0 && message.length <= 2000;
+    },
+    
+    getCategoryTurkish(category) {
+        const categories = {
+            'fiction': 'Roman',
+            'non-fiction': 'Akademik',
+            'science': 'Bilim',
+            'history': 'Tarih',
+            'economics': 'Ekonomi',
+            'business': 'İşletme'
+        };
+        return categories[category] || category;
     }
 };
 
@@ -201,28 +221,33 @@ const Auth = {
         const user = Data.users.find(u => u.username === username && u.password === password);
         if (user) {
             Data.currentUser = { ...user };
-            localStorage.setItem('book_current_user', JSON.stringify(Data.currentUser));
+            localStorage.setItem('kds_current_user', JSON.stringify(Data.currentUser));
             this.updateUIAfterLogin();
-            Helpers.showNotification(`Welcome ${user.username}!`, 'success');
+            Helpers.showNotification(`Hoş geldiniz ${user.username}!`, 'success');
             return true;
         }
-        Helpers.showNotification('Invalid username or password', 'error');
+        Helpers.showNotification('Kullanıcı adı veya şifre hatalı', 'error');
         return false;
     },
     
     register(username, email, password, confirmPassword) {
         if (password !== confirmPassword) {
-            Helpers.showNotification('Passwords do not match', 'error');
+            Helpers.showNotification('Şifreler eşleşmiyor', 'error');
+            return false;
+        }
+        
+        if (password.length < 4) {
+            Helpers.showNotification('Şifre en az 4 karakter olmalıdır', 'error');
             return false;
         }
         
         if (Data.users.find(u => u.username === username)) {
-            Helpers.showNotification('Username already exists', 'error');
+            Helpers.showNotification('Bu kullanıcı adı zaten kullanılıyor', 'error');
             return false;
         }
         
         if (Data.users.find(u => u.email === email)) {
-            Helpers.showNotification('Email already registered', 'error');
+            Helpers.showNotification('Bu e-posta adresi zaten kayıtlı', 'error');
             return false;
         }
         
@@ -230,22 +255,24 @@ const Auth = {
             id: Date.now(),
             username: username,
             email: email,
-            password: password
+            password: password,
+            fullName: username,
+            department: 'İşletme'
         };
         
         Data.users.push(newUser);
         Data.saveUsers();
         
-        Helpers.showNotification('Registration successful! Please login', 'success');
+        Helpers.showNotification('Kayıt başarılı! Lütfen giriş yapın', 'success');
         return true;
     },
     
     logout() {
         Data.currentUser = null;
         Data.currentConversation = null;
-        localStorage.removeItem('book_current_user');
+        localStorage.removeItem('kds_current_user');
         this.updateUIAfterLogout();
-        Helpers.showNotification('Logged out successfully', 'success');
+        Helpers.showNotification('Başarıyla çıkış yapıldı', 'success');
     },
     
     updateUIAfterLogin() {
@@ -304,16 +331,16 @@ const Auth = {
         
         if (container) {
             if (myBooks.length === 0) {
-                container.innerHTML = '<p class="empty-state">You don\'t have any books yet</p>';
+                container.innerHTML = '<div class="empty-state"><p>Henüz kitabınız bulunmuyor. Kitap eklemek için "Kitap Ekle" sayfasını kullanın.</p></div>';
             } else {
                 container.innerHTML = myBooks.map(book => `
                     <div class="book-card">
                         <h3>${Helpers.escapeHtml(book.title)}</h3>
-                        <p><strong>Author:</strong> ${Helpers.escapeHtml(book.author)}</p>
-                        <p><strong>Category:</strong> ${book.category}</p>
-                        <p><strong>Condition:</strong> ${book.condition}</p>
+                        <p><strong>Yazar:</strong> ${Helpers.escapeHtml(book.author)}</p>
+                        <p><strong>Kategori:</strong> ${Helpers.getCategoryTurkish(book.category)}</p>
+                        <p><strong>Durum:</strong> ${Helpers.escapeHtml(book.condition)}</p>
                         <button onclick="Data.deleteBook(${book.id}, ${Data.currentUser.id})" class="delete-btn">
-                            Delete
+                            Kitabı Sil
                         </button>
                     </div>
                 `).join('');
@@ -339,9 +366,9 @@ const Notification = {
         const messagesLink = document.querySelector('.nav-menu a[onclick*="messages"]');
         if (messagesLink) {
             if (totalUnread > 0) {
-                messagesLink.innerHTML = `Messages (${totalUnread})`;
+                messagesLink.innerHTML = `Mesajlar (${totalUnread})`;
             } else {
-                messagesLink.innerHTML = `Messages`;
+                messagesLink.innerHTML = `Mesajlar`;
             }
         }
     },
@@ -355,7 +382,7 @@ const Notification = {
         unreadConversations.forEach(conv => {
             const lastMessage = conv.messages[conv.messages.length - 1];
             if (lastMessage && lastMessage.userId !== Data.currentUser.id) {
-                Helpers.showNotification(`New message from ${this.getOtherUserName(conv)}: ${lastMessage.content.substring(0, 50)}`, 'info');
+                Helpers.showNotification(`${this.getOtherUserName(conv)} size yeni mesaj gönderdi: ${lastMessage.content.substring(0, 50)}`, 'info');
             }
         });
         
@@ -365,7 +392,7 @@ const Notification = {
     getOtherUserName(conversation) {
         const otherUserId = conversation.userId === Data.currentUser.id ? conversation.recipientId : conversation.userId;
         const user = Data.getUserById(otherUserId);
-        return user ? user.username : 'User';
+        return user ? user.username : 'Kullanıcı';
     }
 };
 
@@ -390,14 +417,15 @@ const Conversation = {
         
         chatArea.innerHTML = `
             <div class="chat-header">
-                <h3>${Helpers.escapeHtml(otherUser?.username || 'User')} - Book: ${Helpers.escapeHtml(conversation.bookTitle)}</h3>
+                <h3>📖 ${Helpers.escapeHtml(conversation.bookTitle)}</h3>
+                <p><strong>${Helpers.escapeHtml(otherUser?.username || 'Kullanıcı')}</strong> ile konuşuyorsunuz</p>
             </div>
             <div class="chat-messages" id="chatMessages">
                 ${this.renderMessages(conversation.messages)}
             </div>
             <div class="chat-input">
-                <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="if(event.key === 'Enter') Conversation.sendMessage()">
-                <button onclick="Conversation.sendMessage()" class="btn btn-primary">Send</button>
+                <input type="text" id="messageInput" placeholder="Mesajınızı yazın..." onkeypress="if(event.key === 'Enter') Conversation.sendMessage()">
+                <button onclick="Conversation.sendMessage()" class="btn btn-primary">Gönder</button>
             </div>
         `;
         
@@ -414,7 +442,7 @@ const Conversation = {
     
     renderMessages(messages) {
         if (!messages || messages.length === 0) {
-            return '<div class="empty-state"><p>No messages yet. Start the conversation!</p></div>';
+            return '<div class="empty-state"><p>Henüz mesaj yok. Konuşmayı başlatın!</p></div>';
         }
         
         return messages.map(message => {
@@ -435,7 +463,7 @@ const Conversation = {
         const content = input.value.trim();
         
         if (!Helpers.validateMessage(content)) {
-            Helpers.showNotification('Invalid message (1-2000 characters)', 'error');
+            Helpers.showNotification('Geçersiz mesaj (1-2000 karakter)', 'error');
             return;
         }
         
@@ -456,19 +484,20 @@ const Conversation = {
     
     startConversation(bookId, ownerId, bookTitle) {
         if (!Data.currentUser) {
-            Helpers.showNotification('Please login to contact the owner', 'error');
+            Helpers.showNotification('Kitap sahibine mesaj göndermek için lütfen giriş yapın', 'error');
             showPage('auth');
             return;
         }
         
         if (Data.currentUser.id === ownerId) {
-            Helpers.showNotification('You cannot contact yourself', 'error');
+            Helpers.showNotification('Kendi kitabınız için mesaj gönderemezsiniz', 'error');
             return;
         }
         
         const conversation = Data.getOrCreateConversation(Data.currentUser.id, ownerId, bookId, bookTitle);
         this.openConversation(conversation.id);
         showPage('messages');
+        Helpers.showNotification('Konuşma başlatıldı! Mesaj gönderebilirsiniz.', 'success');
     }
 };
 
@@ -499,18 +528,18 @@ const BooksModule = {
         if (!container) return;
         
         if (filteredBooks.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>No books found</p></div>';
+            container.innerHTML = '<div class="empty-state"><p>Kitap bulunamadı</p></div>';
         } else {
             container.innerHTML = filteredBooks.map(book => `
                 <div class="book-card">
                     <h3>${Helpers.escapeHtml(book.title)}</h3>
-                    <p><strong>Author:</strong> ${Helpers.escapeHtml(book.author)}</p>
-                    <p><strong>Category:</strong> ${book.category}</p>
-                    <p><strong>Condition:</strong> ${book.condition}</p>
-                    <p class="book-owner"><strong>Owner:</strong> ${Helpers.escapeHtml(book.ownerName)}</p>
+                    <p><strong>Yazar:</strong> ${Helpers.escapeHtml(book.author)}</p>
+                    <p><strong>Kategori:</strong> ${Helpers.getCategoryTurkish(book.category)}</p>
+                    <p><strong>Durum:</strong> ${Helpers.escapeHtml(book.condition)}</p>
+                    <p class="book-owner"><strong>Kitap Sahibi:</strong> ${Helpers.escapeHtml(book.ownerName)}</p>
                     <button onclick="Conversation.startConversation(${book.id}, ${book.ownerId}, '${Helpers.escapeHtml(book.title).replace(/'/g, "\\'")}')" 
                             class="btn btn-primary contact-btn">
-                        Contact Owner
+                        📩 Kitap Sahibine Mesaj Gönder
                     </button>
                 </div>
             `).join('');
@@ -521,7 +550,7 @@ const BooksModule = {
         event.preventDefault();
         
         if (!Data.currentUser) {
-            Helpers.showNotification('Please login to add a book', 'error');
+            Helpers.showNotification('Kitap eklemek için lütfen giriş yapın', 'error');
             showPage('auth');
             return;
         }
@@ -543,12 +572,12 @@ const BooksModule = {
         };
         
         if (!book.title || !book.author || !book.category) {
-            Helpers.showNotification('Please fill all required fields', 'error');
+            Helpers.showNotification('Lütfen tüm zorunlu alanları doldurun', 'error');
             return;
         }
         
         Data.addBook(book);
-        Helpers.showNotification('Book added successfully!', 'success');
+        Helpers.showNotification('Kitap başarıyla eklendi!', 'success');
         
         // Reset form
         if (titleInput) titleInput.value = '';
@@ -575,7 +604,7 @@ const ConversationList = {
         if (!container) return;
         
         if (conversations.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>No conversations yet</p></div>';
+            container.innerHTML = '<div class="empty-state"><p>Henüz hiç konuşmanız yok. Bir kitaba mesaj göndererek başlayın!</p></div>';
             return;
         }
         
@@ -590,9 +619,12 @@ const ConversationList = {
             return `
                 <div class="conversation-item" onclick="Conversation.openConversation(${conv.id})">
                     <div class="conversation-main">
-                        <div class="conversation-user">${Helpers.escapeHtml(otherUser?.username || 'User')}</div>
+                        <div class="conversation-user">${Helpers.escapeHtml(otherUser?.username || 'Kullanıcı')}</div>
                         <div class="conversation-last">
-                            ${lastMessage ? Helpers.escapeHtml(lastMessage.content.substring(0, 50)) : 'No messages yet'}
+                            📖 ${Helpers.escapeHtml(conv.bookTitle.substring(0, 30))}
+                        </div>
+                        <div class="conversation-last">
+                            ${lastMessage ? Helpers.escapeHtml(lastMessage.content.substring(0, 40)) : 'Henüz mesaj yok'}
                         </div>
                     </div>
                     <div class="conversation-meta">
@@ -628,7 +660,7 @@ function showPage(pageName) {
         if (chatArea && !Data.currentConversation) {
             chatArea.innerHTML = `
                 <div class="empty-state">
-                    <p>Select a conversation to start messaging</p>
+                    <p>Mesajlaşmak için bir konuşma seçin</p>
                 </div>
             `;
         }
@@ -673,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Data.init();
     
     // Check for existing session
-    const storedUser = localStorage.getItem('book_current_user');
+    const storedUser = localStorage.getItem('kds_current_user');
     if (storedUser) {
         Data.currentUser = JSON.parse(storedUser);
         Auth.updateUIAfterLogin();
@@ -734,4 +766,5 @@ if (addBookForm) {
     addBookForm.addEventListener('submit', (e) => {
         BooksModule.addBook(e);
     });
-}
+            }
+            
